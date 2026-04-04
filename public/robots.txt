@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nostrmail.org/sitemap-index.xml

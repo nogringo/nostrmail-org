@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OG Image Generator - Nostr Mail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; padding: 0; background: #f0f0f0; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Inter', sans-serif; }
+        .og-card {
+            width: 1200px;
+            height: 630px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 80px;
+            box-sizing: border-box;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        }
+        .logo {
+            width: 320px;
+            height: 320px;
+            margin-right: 60px;
+            object-fit: contain;
+        }
+        .content {
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            font-size: 110px;
+            font-weight: 800;
+            margin: 0;
+            color: #1A1A1A;
+            letter-spacing: -0.04em;
+        }
+        p {
+            font-size: 34px;
+            color: #666;
+            margin: 10px 0 35px 0;
+            max-width: 700px;
+            line-height: 1.3;
+        }
+        .badge {
+            background: #673AB7;
+            color: white;
+            padding: 14px 32px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 18px;
+            width: fit-content;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+    </style>
+</head>
+<body>
+    <div class="og-card">
+        <!-- Using the new tight logo -->
+        <img src="public/logo-tight.png" class="logo" alt="Logo">
+        
+        <div class="content">
+            <h1>Nostr Mail</h1>
+            <p>The Open Protocol for Sovereign, Decentralized Email.</p>
+            <div class="badge">Powered by Nostr</div>
+        </div>
+    </div>
+</body>
+</html>

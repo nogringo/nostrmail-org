@@ -2,9 +2,16 @@
 interface Props {
 	title: string;
 	description?: string;
+	image?: string;
+	canonicalURL?: string;
 }
 
-const { title, description = "Nostr Mail - The open protocol for sovereign, decentralized email." } = Astro.props;
+const { 
+	title, 
+	description = "Nostr Mail - The open protocol for sovereign, decentralized email.",
+	image = "/og-image.png",
+	canonicalURL = new URL(Astro.url.pathname, Astro.site || "https://nostrmail.org").toString()
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -12,10 +19,45 @@ const { title, description = "Nostr Mail - The open protocol for sovereign, dece
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<meta name="generator" content={Astro.generator} />
+		
+		<!-- SEO -->
 		<title>{title}</title>
 		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={Astro.url} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={new URL(image, Astro.url)} />
+
+		<!-- Twitter -->
+		<meta property="twitter:card" content="summary_large_image" />
+		<meta property="twitter:url" content={Astro.url} />
+		<meta property="twitter:title" content={title} />
+		<meta property="twitter:description" content={description} />
+		<meta property="twitter:image" content={new URL(image, Astro.url)} />
+
+		<!-- JSON-LD -->
+		<script type="application/ld+json" is:inline>
+			{
+			  "@context": "https://schema.org",
+			  "@type": "SoftwareApplication",
+			  "name": "Nostr Mail",
+			  "operatingSystem": "All",
+			  "applicationCategory": "CommunicationApplication",
+			  "description": "Nostr Mail is a decentralized email protocol and client built on top of the Nostr network.",
+			  "offers": {
+				"@type": "Offer",
+				"price": "0"
+			  }
+			}
+		</script>
+
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
