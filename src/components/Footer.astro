@@ -1,0 +1,86 @@
+---
+---
+<footer class="footer">
+	<div class="container footer-grid">
+		<div class="brand">
+			<div class="logo">Nostr Mail</div>
+			<p>Empowering individuals with sovereign, decentralized email technology.</p>
+		</div>
+		
+		<div class="links">
+			<h4>Protocol</h4>
+			<a href="#protocol">Specifications</a>
+			<a href="https://github.com/nostr-protocol/nips">NIPS</a>
+			<a href="https://github.com/nogringo/nostr-mail-client">Documentation</a>
+		</div>
+		
+		<div class="links">
+			<h4>Software</h4>
+			<a href="https://nogringo.github.io/nostr-mail-client">Nmail Web</a>
+			<a href="https://zapstore.dev/apps/app.nostrmail.client">Android App</a>
+			<a href="https://github.com/nogringo/nostr-mail-client/releases/latest">Linux App</a>
+		</div>
+		
+		<div class="links">
+			<h4>Community</h4>
+			<a href="https://github.com/nogringo/nostr-mail-client">GitHub</a>
+			<a href="https://nostr.com">Nostr</a>
+		</div>
+	</div>
+	
+	<div class="bottom container">
+		<p>&copy; {new Date().getFullYear()} Nostr Mail. Built for the open web.</p>
+	</div>
+</footer>
+
+<style>
+	.footer {
+		padding: 80px 0 40px;
+		background: #050505;
+		border-top: 1px solid var(--border);
+	}
+	.footer-grid {
+		display: grid;
+		grid-template-columns: 2fr 1fr 1fr 1fr;
+		gap: 60px;
+		margin-bottom: 60px;
+	}
+	.brand .logo {
+		font-weight: 800;
+		font-size: 1.5rem;
+		margin-bottom: 16px;
+		color: var(--accent-protocol);
+	}
+	h4 {
+		font-weight: 800;
+		font-size: 1rem;
+		margin-bottom: 24px;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--fg);
+	}
+	.links {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.links a {
+		color: var(--muted);
+		transition: color 0.2s ease;
+	}
+	.links a:hover {
+		color: var(--accent-app);
+	}
+	.bottom {
+		border-top: 1px solid var(--border);
+		padding-top: 40px;
+		text-align: center;
+		font-size: 0.875rem;
+	}
+	@media (max-width: 768px) {
+		.footer-grid {
+			grid-template-columns: 1fr;
+			gap: 40px;
+		}
+	}
+</style>

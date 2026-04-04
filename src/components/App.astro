@@ -1,0 +1,110 @@
+---
+---
+<section id="app" class="app">
+	<div class="container app-content">
+		<div class="text">
+			<h2 class="section-title">Nmail: The <span>Reference Client</span></h2>
+			<p>Built with Flutter, Nmail is a cross-platform application designed to interact seamlessly with the Nostr Mail protocol. It feels like your favorite email client, but runs on a decentralized network.</p>
+			
+			<ul class="features">
+				<li>✓ <strong>Cross-platform:</strong> Web, Mobile, and Desktop support.</li>
+				<li>✓ <strong>Synced:</strong> All your folders and settings follow you everywhere.</li>
+				<li>✓ <strong>Interoperable:</strong> Email anyone, whether they're on Nostr or SMTP (via bridges).</li>
+				<li>✓ <strong>Open Source:</strong> Transparent and community-driven.</li>
+			</ul>
+		</div>
+		
+		<div class="download-grid">
+			<a href="https://nogringo.github.io/nostr-mail-client" class="download-card">
+				<div class="platform">Web</div>
+				<div class="desc">Open in Browser</div>
+			</a>
+			
+			<a href="https://zapstore.dev/apps/app.nostrmail.client" class="download-card">
+				<div class="platform">Android</div>
+				<div class="desc">Get on Zapstore</div>
+			</a>
+			
+			<a href="https://github.com/nogringo/nostr-mail-client/releases/latest" class="download-card">
+				<div class="platform">Linux</div>
+				<div class="desc">Get for Desktop</div>
+			</a>
+			
+			<a href="https://github.com/nogringo/nostr-mail-client" class="download-card">
+				<div class="platform">GitHub</div>
+				<div class="desc">Source Code</div>
+			</a>
+		</div>
+	</div>
+</section>
+
+<style>
+	.app {
+		padding: 100px 0;
+		background: #0A0A0A;
+	}
+	.app-content {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 80px;
+		align-items: center;
+	}
+	.section-title {
+		font-size: 2.5rem;
+		font-weight: 800;
+		margin-bottom: 24px;
+	}
+	.section-title span {
+		color: var(--accent-app);
+	}
+	p {
+		font-size: 1.125rem;
+		margin-bottom: 32px;
+	}
+	.features {
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.features li {
+		color: var(--fg);
+		font-weight: 500;
+	}
+	.features strong {
+		color: var(--accent-app);
+	}
+	.download-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 16px;
+	}
+	.download-card {
+		background: #111;
+		border: 1px solid var(--border);
+		padding: 32px;
+		border-radius: 16px;
+		text-align: center;
+		transition: all 0.2s ease;
+	}
+	.download-card:hover {
+		border-color: var(--accent-app);
+		transform: scale(1.02);
+		background: rgba(0, 188, 212, 0.05);
+	}
+	.platform {
+		font-weight: 800;
+		font-size: 1.25rem;
+		margin-bottom: 4px;
+	}
+	.desc {
+		font-size: 0.875rem;
+		color: var(--muted);
+	}
+	@media (max-width: 900px) {
+		.app-content {
+			grid-template-columns: 1fr;
+			gap: 60px;
+		}
+	}
+</style>

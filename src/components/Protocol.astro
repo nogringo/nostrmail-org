@@ -1,0 +1,89 @@
+---
+---
+<section id="protocol" class="protocol">
+	<div class="container">
+		<div class="header">
+			<h2 class="section-title">The Open Protocol</h2>
+			<p>A set of open standards designed to replace SMTP with a faster, safer, and decentralized relay network.</p>
+		</div>
+		
+		<div class="grid">
+			<div class="card">
+				<div class="card-icon">1301</div>
+				<h3>Kind 1301</h3>
+				<p>The universal email event. A simple JSON structure that carries RFC 2822 email content over the Nostr relay network.</p>
+			</div>
+			
+			<div class="card">
+				<div class="card-icon">🔐</div>
+				<h3>Secure by Default</h3>
+				<p>Uses <strong>NIP-44</strong> for encryption and <strong>NIP-59</strong> (Gift Wraps) to hide metadata from relays, ensuring total privacy.</p>
+			</div>
+			
+			<div class="card">
+				<div class="card-icon">🌸</div>
+				<h3>Blossom Support</h3>
+				<p>Seamlessly handles large MIME attachments by encrypting and storing them on Blossom servers with hybrid referencing.</p>
+			</div>
+			
+			<div class="card">
+				<div class="card-icon">🏷️</div>
+				<h3>Smart Syncing</h3>
+				<p>Uses <strong>NIP-32</strong> labels for folders and read states, and <strong>NIP-78</strong> for synchronizing settings across all devices.</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.protocol {
+		padding: 100px 0;
+		background: linear-gradient(180deg, var(--bg) 0%, #111 100%);
+	}
+	.header {
+		text-align: center;
+		margin-bottom: 60px;
+	}
+	.section-title {
+		font-size: 2.5rem;
+		font-weight: 800;
+		margin-bottom: 16px;
+	}
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 24px;
+	}
+	.card {
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		padding: 40px 32px;
+		border-radius: 20px;
+		transition: transform 0.2s ease, border-color 0.2s ease;
+	}
+	.card:hover {
+		transform: translateY(-5px);
+		border-color: var(--accent-protocol);
+	}
+	.card-icon {
+		font-family: 'Fira Code', monospace;
+		font-size: 1.5rem;
+		font-weight: 800;
+		color: var(--accent-protocol);
+		margin-bottom: 24px;
+		background: rgba(103, 58, 183, 0.1);
+		width: 60px;
+		height: 60px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 12px;
+	}
+	h3 {
+		font-size: 1.5rem;
+		margin-bottom: 16px;
+	}
+	strong {
+		color: var(--fg);
+	}
+</style>

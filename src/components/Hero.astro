@@ -1,0 +1,104 @@
+---
+---
+<section class="hero">
+	<div class="container hero-content">
+		<div class="badge">Nostr Mail Protocol</div>
+		<h1>Email, <span>Decoupled.</span></h1>
+		<p>The first decentralized email protocol powered by Nostr. Own your identity, your keys, and your inbox. No central authority. No gatekeepers.</p>
+		<div class="actions">
+			<a href="https://nogringo.github.io/nostr-mail-client" class="btn btn-app">Launch Nmail Web</a>
+			<a href="#protocol" class="btn btn-protocol">Explore the Protocol</a>
+		</div>
+	</div>
+	<div class="glow"></div>
+</section>
+
+<style>
+	.hero {
+		padding: 120px 0 80px;
+		position: relative;
+		overflow: hidden;
+		text-align: center;
+	}
+	.hero-content {
+		position: relative;
+		z-index: 10;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.badge {
+		background: rgba(103, 58, 183, 0.1);
+		border: 1px solid var(--accent-protocol);
+		color: var(--accent-protocol);
+		padding: 6px 16px;
+		border-radius: 100px;
+		font-weight: 600;
+		font-size: 0.875rem;
+		margin-bottom: 24px;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+	h1 {
+		font-size: 4.5rem;
+		font-weight: 800;
+		margin-bottom: 24px;
+		letter-spacing: -0.02em;
+	}
+	h1 span {
+		background: linear-gradient(135deg, var(--accent-protocol), var(--accent-app));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+	p {
+		font-size: 1.25rem;
+		max-width: 700px;
+		margin-bottom: 40px;
+	}
+	.actions {
+		display: flex;
+		gap: 16px;
+		justify-content: center;
+	}
+	.btn {
+		padding: 14px 32px;
+		border-radius: 12px;
+		font-weight: 600;
+		font-size: 1rem;
+		transition: all 0.2s ease;
+	}
+	.btn-app {
+		background: var(--accent-app);
+		color: var(--bg);
+	}
+	.btn-app:hover {
+		background: #26c6da;
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px rgba(0, 188, 212, 0.3);
+	}
+	.btn-protocol {
+		border: 1px solid var(--border);
+		background: rgba(255, 255, 255, 0.05);
+	}
+	.btn-protocol:hover {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: var(--accent-protocol);
+		transform: translateY(-2px);
+	}
+	.glow {
+		position: absolute;
+		top: -200px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 800px;
+		height: 600px;
+		background: radial-gradient(circle, rgba(103, 58, 183, 0.15) 0%, rgba(0, 188, 212, 0.05) 50%, transparent 100%);
+		filter: blur(80px);
+		z-index: 1;
+	}
+	@media (max-width: 768px) {
+		h1 { font-size: 3rem; }
+		.actions { flex-direction: column; width: 100%; max-width: 300px; }
+		.btn { width: 100%; }
+	}
+</style>
