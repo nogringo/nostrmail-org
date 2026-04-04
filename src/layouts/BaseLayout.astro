@@ -27,6 +27,7 @@ const { title, description = "Nostr Mail - The open protocol for sovereign, dece
 
 <style is:global>
 	:root {
+		/* Dark mode (default) */
 		--bg: #0A0A0A;
 		--fg: #F5F5F5;
 		--accent-protocol: #673AB7;
@@ -34,6 +35,18 @@ const { title, description = "Nostr Mail - The open protocol for sovereign, dece
 		--muted: #888;
 		--card-bg: #161616;
 		--border: #333;
+		--hero-gradient: radial-gradient(circle, rgba(103, 58, 183, 0.15) 0%, rgba(0, 188, 212, 0.05) 50%, transparent 100%);
+	}
+
+	@media (prefers-color-scheme: light) {
+		:root {
+			--bg: #FFFFFF;
+			--fg: #1A1A1A;
+			--muted: #666;
+			--card-bg: #F8F9FA;
+			--border: #E9ECEF;
+			--hero-gradient: radial-gradient(circle, rgba(103, 58, 183, 0.08) 0%, rgba(0, 188, 212, 0.03) 50%, transparent 100%);
+		}
 	}
 	* {
 		box-sizing: border-box;
