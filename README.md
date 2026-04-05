@@ -19,3 +19,5 @@ Nostr Mail is an open standard designed to replace traditional SMTP with a decen
 ## 🔗 Related Projects
 
 - **Nmail Client:** [github.com/nogringo/nostr-mail-client](https://github.com/nogringo/nostr-mail-client)
+- **nostr_mail (Dart/Flutter):** [pub.dev/packages/nostr_mail](https://pub.dev/packages/nostr_mail)
+- **nostr-mail (NPM):** [npmjs.com/package/nostr-mail](https://www.npmjs.com/package/nostr-mail)
