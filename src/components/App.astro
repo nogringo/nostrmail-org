@@ -1,16 +1,41 @@
 ---
+import fs from 'node:fs/promises';
+import cached from '../data/githubStars.json';
+
+const cachePath = new URL('../data/githubStars.json', import.meta.url);
+let stars: number = cached.stars;
+
+try {
+	const res = await fetch('https://api.github.com/repos/nogringo/nostr-mail-client');
+	if (res.ok) {
+		const data = await res.json();
+		if (typeof data.stargazers_count === 'number') {
+			stars = data.stargazers_count;
+			if (stars !== cached.stars) {
+				await fs.writeFile(cachePath, JSON.stringify({ stars }, null, 2) + '\n');
+			}
+		}
+	}
+} catch {
+	// fall through to cached value
+}
+
+function formatStars(n: number): string {
+	if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+	return n.toString();
+}
 ---
 <section id="app" class="app">
 	<div class="container app-content">
 		<div class="text">
 			<h2 class="section-title">Nmail: The <span>Reference Client</span></h2>
-			<p>Built with Flutter, Nmail is a cross-platform application designed to interact seamlessly with the Nostr Mail protocol. It feels like your favorite email client, but runs on a decentralized network.</p>
+			<p>The open-source reference client for the protocol. Built with Flutter for Web, Android, and Linux. Same email UX you know, except your inbox lives on a relay network you control.</p>
 			
 			<ul class="features">
-				<li>✓ <strong>Cross-platform:</strong> Web, Mobile, and Desktop support.</li>
-				<li>✓ <strong>Synced:</strong> All your folders and settings follow you everywhere.</li>
-				<li>✓ <strong>Interoperable:</strong> Email anyone, whether they're on Nostr or SMTP (via bridges).</li>
-				<li>✓ <strong>Open Source:</strong> Transparent and community-driven.</li>
+				<li><strong>Cross-platform:</strong> Web, Mobile, and Desktop support.</li>
+				<li><strong>Synced:</strong> All your folders and settings follow you everywhere.</li>
+				<li><strong>Interoperable:</strong> Email anyone, whether they're on Nostr or SMTP (via bridges).</li>
+				<li><strong>Open Source:</strong> Transparent and community-driven.</li>
 			</ul>
 		</div>
 		
@@ -32,7 +57,7 @@
 			
 			<a href="https://github.com/nogringo/nostr-mail-client" class="download-card">
 				<div class="platform">GitHub</div>
-				<div class="desc">Source Code</div>
+				<div class="desc">★ {formatStars(stars)} · Source Code</div>
 			</a>
 		</div>
 	</div>
@@ -91,7 +116,7 @@
 	.download-card:hover {
 		border-color: var(--accent-app);
 		transform: scale(1.02);
-		background: rgba(0, 188, 212, 0.05);
+		background: rgba(139, 92, 246, 0.05);
 	}
 	.platform {
 		font-weight: 800;
