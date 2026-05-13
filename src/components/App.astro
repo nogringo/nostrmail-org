@@ -1,4 +1,29 @@
 ---
+import fs from 'node:fs/promises';
+import cached from '../data/githubStars.json';
+
+const cachePath = new URL('../data/githubStars.json', import.meta.url);
+let stars: number = cached.stars;
+
+try {
+	const res = await fetch('https://api.github.com/repos/nogringo/nostr-mail-client');
+	if (res.ok) {
+		const data = await res.json();
+		if (typeof data.stargazers_count === 'number') {
+			stars = data.stargazers_count;
+			if (stars !== cached.stars) {
+				await fs.writeFile(cachePath, JSON.stringify({ stars }, null, 2) + '\n');
+			}
+		}
+	}
+} catch {
+	// fall through to cached value
+}
+
+function formatStars(n: number): string {
+	if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+	return n.toString();
+}
 ---
 <section id="app" class="app">
 	<div class="container app-content">
@@ -32,7 +57,7 @@
 			
 			<a href="https://github.com/nogringo/nostr-mail-client" class="download-card">
 				<div class="platform">GitHub</div>
-				<div class="desc">Source Code</div>
+				<div class="desc">★ {formatStars(stars)} · Source Code</div>
 			</a>
 		</div>
 	</div>
