@@ -5,7 +5,6 @@ import kusnachter from '../assets/avatars/kusnachter.jpg';
 import lmqevp from '../assets/avatars/lmqevp.jpg';
 import soda from '../assets/avatars/soda.png';
 import ppatel from '../assets/avatars/ppatel.png';
-import niko from '../assets/avatars/niko.jpg';
 import dadel from '../assets/avatars/dadel.jpg';
 
 export type NostrEvent = {
@@ -75,14 +74,6 @@ export const quotes: CommunityQuote[] = [
 		nevent: "nevent1qqsgreqyf0zeeekawkrcs96mumpe4flqsne0c36fprxzqn8r4qfhhuczyzsklf9snpcj6d7es4wf4xn4csug6kqjhpxuv79pa0zx7j876n02csqf6w5",
 		displayText: "Decentralized 'email'. Great leap towards exiting the system.",
 		avatar: ppatel,
-	},
-	{
-		event: {"kind": 1, "id": "ac16445af764f81016255ea205cd61d8076f0fd047b1f10303e4b44870b992a4", "pubkey": "c8e5dc3d094ba1b7ddaf24338df3d73b7f291b861ca0229d82622b9deabbc89f", "created_at": 1778621038, "tags": [["e", "0ea7d9af0b220f2279f4b6bf722a056e3ad74903a85c97d58972321923a284e9", "wss://relay.primal.net/v1/zulu-papa-kilo", "root"], ["e", "e9d6c505fde66e0d886f0edf63ef133d34352858919acb1d6ea244ad67e1bf33", "wss://nostr.mom/beacon-yonder-november", "reply"], ["p", "b22b06b051fd5232966a9344a634d956c3dc33a7f5ecdcad9ed11ddc4120a7f2", "", "mention"], ["p", "1e67de3754171071d3cf9b44b6e546bd94fd0a2ca3fb4dbbb1b054685c9116e4", "", "mention"]], "content": "Did it. Only worked once :/ Proton received one email. Gmail zero. Tried again with an image. None. Love the idea though 🫶", "sig": "438b1e27b6a58484b69366d5bee2a312c885d55e7295963738bcc78770ebc5936b82d50e591e5378faf6014dd6928f2e39c766d99d4545df1cac2af0a3cbf312"},
-		name: "Niko Nakamoto",
-		npub: "npub1erjac0gffwsm0hd0ysecmu7h8dljjxuxrjsz98vzvg4em64mez0sf387m4",
-		nevent: "nevent1qqs2c9jyttmkf7qszcj4ags9e4saspm0plgy0v03qvp7fdzgwzue9fqzyrywthpap996rd7a4ujr8r0n6uah72gmscw2qg5asf3zh802h0yf789aznw",
-		displayText: "Did it. Only worked once :/ Proton received one email. Gmail zero. Tried again with an image. None. Love the idea though 🫶",
-		avatar: niko,
 	},
 	{
 		event: {"kind": 1111, "id": "89e16d8792284d2fd1c8cb10a12c24b6e926431564509e61aea23db45549cca8", "pubkey": "3e4a9d385ff2db9b79dbbf888a9c6b6097bf8852e8263fc183458ac07880df9a", "created_at": 1774868486, "tags": [["A", "32267:b22b06b051fd5232966a9344a634d956c3dc33a7f5ecdcad9ed11ddc4120a7f2:app.nostrmail.client"], ["K", "32267"], ["P", "b22b06b051fd5232966a9344a634d956c3dc33a7f5ecdcad9ed11ddc4120a7f2"], ["a", "32267:b22b06b051fd5232966a9344a634d956c3dc33a7f5ecdcad9ed11ddc4120a7f2:app.nostrmail.client"], ["k", "32267"], ["p", "b22b06b051fd5232966a9344a634d956c3dc33a7f5ecdcad9ed11ddc4120a7f2"], ["v", "0.7.2"]], "content": "This is awesome. One question. Can I send to NIP-05 from legacy email? Should I register NIP05 to uid.ovh somehow or how does this work?", "sig": "1c992c053f2afe2026333db670b0b1f1d14d98c1e1126702ce7d9f91ccc27f1d220bf0d8e88409a07b7dd838a2fd777b86f0f1226d3c98bc6a3fa2694eed74f2"},
