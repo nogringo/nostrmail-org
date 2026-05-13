@@ -1,0 +1,165 @@
+---
+import { Image } from 'astro:assets';
+import { quotes } from '../data/communityQuotes';
+
+function formatDate(unixSec: number): string {
+	const d = new Date(unixSec * 1000);
+	return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+---
+<section id="community" class="community">
+	<div class="container">
+		<div class="header">
+			<h2 class="section-title">Public discussion, real identities.</h2>
+			<p>Real Nostr notes from real users. Click any name to see the author, or "verify" to see the signed event.</p>
+		</div>
+
+		<div class="feed">
+			{quotes.map((q) => {
+				const date = formatDate(q.event.created_at);
+				const initial = q.name.charAt(0).toUpperCase();
+				return (
+					<article class="note">
+						<a href={`https://njump.me/${q.npub}`} target="_blank" rel="noopener noreferrer" class="avatar" aria-label={`View ${q.name} on Nostr`}>
+							{q.avatar ? (
+								<Image src={q.avatar} alt="" width={88} height={88} class="avatar-img" />
+							) : (
+								<span class="avatar-fallback">{initial}</span>
+							)}
+						</a>
+						<div class="body">
+							<a href={`https://njump.me/${q.npub}`} target="_blank" rel="noopener noreferrer" class="name">{q.name}</a>
+							<p class="text">{q.displayText}</p>
+							<footer class="foot">
+								<span class="when">{date}</span>
+								<a href={`https://njump.me/${q.nevent}`} target="_blank" rel="noopener noreferrer" class="verify">
+									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 12 2 2 4-4"/><path d="M12 3a9 9 0 1 0 9 9"/><path d="M21 3v6h-6"/></svg>
+									Verify
+								</a>
+							</footer>
+						</div>
+					</article>
+				);
+			})}
+		</div>
+	</div>
+</section>
+
+<style>
+	.community {
+		padding: 100px 0;
+		background: var(--bg);
+		border-top: 1px solid var(--border);
+	}
+	.header {
+		text-align: center;
+		margin-bottom: 60px;
+		max-width: 720px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	.section-title {
+		font-size: 2.5rem;
+		font-weight: 800;
+		margin-bottom: 16px;
+		letter-spacing: -0.02em;
+	}
+	.feed {
+		max-width: 640px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+	.note {
+		display: flex;
+		gap: 16px;
+		padding: 20px 0;
+		border-bottom: 1px solid var(--border);
+	}
+	.note:first-child {
+		border-top: 1px solid var(--border);
+	}
+	.avatar {
+		flex-shrink: 0;
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		overflow: hidden;
+		display: block;
+	}
+	.avatar-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+	.avatar-fallback {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		background: var(--accent-protocol);
+		color: #fff;
+		font-weight: 800;
+		font-size: 1.125rem;
+	}
+	.body {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+	.name {
+		font-weight: 800;
+		color: var(--fg);
+		font-size: 0.975rem;
+		align-self: flex-start;
+	}
+	.name:hover {
+		color: var(--accent-protocol);
+	}
+	.text {
+		font-size: 1rem;
+		color: var(--fg);
+		line-height: 1.55;
+		margin: 0;
+		white-space: pre-wrap;
+		word-wrap: break-word;
+	}
+	.foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		margin-top: 4px;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.72rem;
+		color: var(--muted);
+	}
+	.verify {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--muted);
+	}
+	.verify:hover {
+		color: var(--accent-protocol);
+	}
+	.verify svg {
+		width: 13px;
+		height: 13px;
+	}
+	@media (max-width: 600px) {
+		.section-title {
+			font-size: 2rem;
+		}
+		.foot {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 6px;
+		}
+	}
+</style>
