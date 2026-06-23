@@ -1,0 +1,959 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Footer from '../components/Footer.astro';
+import CodeBlock from '../components/CodeBlock.astro';
+import { components } from '../data/selfHostComponents';
+
+const stackItems = [...components].sort((a, b) => a.order - b.order);
+
+const title = 'Self-host a Nostr Mail bridge | Nostr Mail';
+const description =
+	'Run your own email-to-Nostr bridge. Pick inbound, outbound, or both and copy a ready-to-run .env and docker-compose.yml tailored to your setup.';
+---
+
+<BaseLayout title={title} description={description}>
+	<main>
+		<!-- Intro -->
+		<section class="sh-hero">
+			<div class="container">
+				<a href="/" class="sh-back">&larr; nostrmail.org</a>
+				<div class="sh-hero-inner">
+					<h1>Run your own <span>bridge</span>.</h1>
+					<p>Connect legacy email and Nostr on infrastructure you control. Pick your setup below. You'll get one <code>.env</code> and one <code>docker-compose.yml</code> to copy, tailored to your choices.</p>
+					<a href="#configure" class="sh-cta">Configure my setup &darr;</a>
+				</div>
+			</div>
+			<div class="glow"></div>
+		</section>
+
+		<!-- Configurator -->
+		<section id="configure" class="sh-configurator">
+			<div class="container">
+				<div class="sh-panel">
+					<fieldset class="sh-group">
+						<legend>1. What do you want to do?</legend>
+						<div class="sh-options sh-options-3">
+							<label class="sh-option">
+								<input type="radio" name="dir" value="inbound" />
+								<span class="sh-option-card">
+									<span class="sh-option-title">Inbound only</span>
+									<span class="sh-option-desc">Receive legacy email as Nostr events</span>
+									<span class="sh-check" aria-hidden="true">&check;</span>
+								</span>
+							</label>
+							<label class="sh-option">
+								<input type="radio" name="dir" value="outbound" />
+								<span class="sh-option-card">
+									<span class="sh-option-title">Outbound only</span>
+									<span class="sh-option-desc">Send Nostr messages to legacy email</span>
+									<span class="sh-check" aria-hidden="true">&check;</span>
+								</span>
+							</label>
+							<label class="sh-option">
+								<input type="radio" name="dir" value="both" checked />
+								<span class="sh-option-card">
+									<span class="sh-option-title">Both</span>
+									<span class="sh-option-desc">A full two-way bridge</span>
+									<span class="sh-check" aria-hidden="true">&check;</span>
+								</span>
+							</label>
+						</div>
+					</fieldset>
+
+					<fieldset class="sh-group" data-show-for="outbound">
+						<legend>2. Outbound SMTP</legend>
+						<div class="sh-options sh-options-2">
+							<label class="sh-option">
+								<input type="radio" name="smtp" value="provider" checked />
+								<span class="sh-option-card">
+									<span class="sh-option-title">I already have an SMTP provider</span>
+									<span class="sh-option-desc">Mailgun, SendGrid, Amazon SES, etc.</span>
+									<span class="sh-check" aria-hidden="true">&check;</span>
+								</span>
+							</label>
+							<label class="sh-option">
+								<input type="radio" name="smtp" value="selfhost" />
+								<span class="sh-option-card">
+									<span class="sh-option-title">Self-host my own SMTP server</span>
+									<span class="sh-option-desc">Postfix + Rspamd on your machine</span>
+									<span class="sh-check" aria-hidden="true">&check;</span>
+								</span>
+							</label>
+						</div>
+					</fieldset>
+
+					<fieldset class="sh-group">
+						<legend>3. Policy &amp; identity <span class="sh-pill">Advanced</span></legend>
+						<label class="sh-toggle">
+							<input type="checkbox" name="policy" role="switch" />
+							<span class="sh-switch" aria-hidden="true"></span>
+							<span class="sh-toggle-text">
+								<span class="sh-toggle-title">Add account management, rate limits &amp; NIP-05 (nmail-api)</span>
+								<span class="sh-toggle-desc">Optional shared identity &amp; policy service for both directions.</span>
+							</span>
+						</label>
+					</fieldset>
+
+					<fieldset class="sh-group">
+						<legend><label for="sh-domain">4. Your domain or subdomain</label></legend>
+						<input type="text" id="sh-domain" name="domain" class="sh-domain-input" placeholder="example.com or nostr.example.com" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url" aria-describedby="sh-domain-help" />
+						<p id="sh-domain-help" class="sh-domain-help">Optional. A whole domain (<code>example.com</code>) <strong>or a subdomain</strong> (<code>nostr.example.com</code>) both work. Whatever you enter is used for the mail host, DNS records, addresses and tests below.</p>
+					</fieldset>
+
+					<button type="button" class="sh-reset">Reset to defaults</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Your stack -->
+		<section class="sh-stack">
+			<div class="container">
+				<div class="header">
+					<h2 class="section-title">Your stack</h2>
+					<p class="sh-stack-summary" aria-live="polite"></p>
+				</div>
+				<div class="sh-stack-grid">
+					{stackItems.map((c) => (
+						<a class="sh-stack-item" href={`#setup`} data-show-for={c.showFor.join(' ')}>
+							<span class="sh-stack-name">{c.name}</span>
+							<span class="sh-stack-role">{c.role}</span>
+						</a>
+					))}
+				</div>
+			</div>
+		</section>
+
+		<!-- Setup -->
+		<section id="setup" class="sh-steps">
+			<div class="container">
+				<div class="header">
+					<h2 class="section-title">Setup</h2>
+					<p>Everything runs from published images with Docker Compose. The files below are generated for your selection. Internal wiring (service hostnames, the shared signing key) is already filled in.</p>
+				</div>
+
+				<!-- Self-hosted SMTP appliance (runs first) -->
+				<article class="sh-step" data-show-for="smtp-selfhost">
+					<div class="sh-step-head">
+						<span class="sh-step-num" aria-hidden="true">A</span>
+						<div>
+							<h3>First: your SMTP server</h3>
+							<p class="sh-step-role">postfix-rspamd-docker ships its own config, so it runs as a separate stack. <a href="https://github.com/nogringo/postfix-rspamd-docker" target="_blank" rel="noopener noreferrer">Repo &rarr;</a></p>
+						</div>
+					</div>
+					<div class="sh-step-body">
+						<p class="sh-prereq"><strong>Prerequisites:</strong> a public IP whose reverse DNS (PTR) matches <code>MAIL_HOSTNAME</code>, your sending domain(s), and port 587 open.</p>
+						<CodeBlock domainTpl label="postfix .env" code={`MAIL_HOSTNAME=mail.example.com
+MAIL_DOMAINS=example.com
+SMTP_USERS=postmaster@example.com:change-me-strong-password
+SUBMISSION_PORT=587`} />
+						<CodeBlock domainTpl label="Run it, then generate DKIM keys" code={`git clone https://github.com/nogringo/postfix-rspamd-docker.git
+cd postfix-rspamd-docker
+cp .env.example .env
+# edit .env: set MAIL_HOSTNAME, MAIL_DOMAINS, SMTP_USERS
+docker compose up -d
+docker compose exec rspamd rspamadm dkim_keygen -d example.com -s dkim -b 2048
+cd ..`} />
+						<p class="sh-note">It publishes 587 on the host, so the bridge reaches it at <code data-domain-tpl>mail.example.com</code> on port 587 (its <code>MAIL_HOSTNAME</code>). Use the <code>SMTP_USERS</code> account as <code>SMTP_USERNAME</code> / <code>SMTP_PASSWORD</code> in the <code>.env</code> below, and publish the DNS records further down before sending.</p>
+						<p class="sh-note">If the bridge can't connect (some hosts, like AWS, don't let a machine reach its own public IP): set <code>SMTP_HOST=host.docker.internal</code> and add <code>extra_hosts: ["host.docker.internal:host-gateway"]</code> to the bridge service, or join both stacks to a shared Docker network and use <code>SMTP_HOST=postfix</code>.</p>
+					</div>
+				</article>
+
+				<!-- Step 1: .env -->
+				<article class="sh-step">
+					<div class="sh-step-head">
+						<span class="sh-step-num" aria-hidden="true">1</span>
+						<div>
+							<h3>Create <code>.env</code></h3>
+							<p class="sh-step-role">Make a new folder, save this as <code>.env</code>, and fill in the placeholder values.</p>
+						</div>
+					</div>
+					<div class="sh-step-body">
+						<div id="sh-env-block"><CodeBlock label=".env" code="" /></div>
+						<p class="sh-note" data-show-for="inbound">Generate <code>WEBHOOK_SIGNING_KEY</code> with <code>openssl rand -hex 32</code>. It is defined once here and shared by both inbound services automatically.</p>
+						<p class="sh-note" data-show-for="policy">Generate each decision token with <code>openssl rand -hex 32</code> too.</p>
+					</div>
+				</article>
+
+				<!-- Step 2: docker-compose.yml -->
+				<article class="sh-step">
+					<div class="sh-step-head">
+						<span class="sh-step-num" aria-hidden="true">2</span>
+						<div>
+							<h3>Create <code>docker-compose.yml</code></h3>
+							<p class="sh-step-role">Save this next to your <code>.env</code>, in the same folder.</p>
+						</div>
+					</div>
+					<div class="sh-step-body">
+						<div id="sh-compose-block"><CodeBlock label="docker-compose.yml" code="" /></div>
+					</div>
+				</article>
+
+				<!-- Step 3: launch -->
+				<article class="sh-step">
+					<div class="sh-step-head">
+						<span class="sh-step-num" aria-hidden="true">3</span>
+						<div>
+							<h3>Launch</h3>
+							<p class="sh-step-role">Bring the whole stack up.</p>
+						</div>
+					</div>
+					<div class="sh-step-body">
+						<CodeBlock code="docker compose up -d" />
+						<div data-show-for="policy">
+							<p class="sh-note">Then apply the nmail-api database migrations once (they ship as SQL in the repo):</p>
+							<CodeBlock label="One-time database migrations" code={`git clone --depth 1 https://github.com/nogringo/nmail-api.git
+for f in nmail-api/migrations/*.sql; do docker compose exec -T postgres psql -U nmail -d nmail < "$f"; done`} />
+							<p class="sh-note">NIP-05 is then served at <code>/.well-known/nostr.json?name=&lt;local-part&gt;</code>, and the admin console at <code>/admin</code> when you set <code>ADMIN_PASSWORD</code>.</p>
+						</div>
+					</div>
+				</article>
+			</div>
+		</section>
+
+		<!-- DNS -->
+		<section class="sh-dns">
+			<div class="container">
+				<div class="header">
+					<h2 class="section-title">DNS records</h2>
+					<p>Configure these at your DNS provider, using the domain from the configurator above. Replace the IPs and DKIM key with your own.</p>
+				</div>
+				<div class="sh-dns-grid">
+					<div class="sh-dns-block" data-show-for="inbound">
+						<h3>Inbound (MX)</h3>
+						<p>Route legacy mail to your bridge server. Add an A/AAAA record for the mail host too.</p>
+						<CodeBlock domainTpl label="MX + A" code={`example.com.            MX   10 mail.example.com.
+mail.example.com.       A       203.0.113.10`} />
+					</div>
+					<div class="sh-dns-block" data-show-for="smtp-selfhost">
+						<h3>Self-hosted SMTP (deliverability)</h3>
+						<p>Reverse DNS (PTR) for your IP must resolve to <code>mail.example.com</code>. Set this with your hosting provider; it must match <code>MAIL_HOSTNAME</code>. Then publish:</p>
+						<CodeBlock domainTpl label="A / AAAA" code={`mail.example.com.       A       203.0.113.10
+mail.example.com.       AAAA    2001:db8::1`} />
+						<CodeBlock domainTpl label="SPF (TXT)" code={`example.com.            TXT  "v=spf1 mx ~all"`} />
+						<CodeBlock domainTpl label="DKIM (TXT): paste the key from rspamadm dkim_keygen" code={`dkim._domainkey.example.com.  TXT  "v=DKIM1; k=rsa; p=MIGfMA0GCSq...your-public-key..."`} />
+						<CodeBlock domainTpl label="DMARC (TXT)" code={`_dmarc.example.com.     TXT  "v=DMARC1; p=none; rua=mailto:postmaster@example.com"`} />
+					</div>
+					<div class="sh-dns-block" data-show-for="smtp-provider">
+						<h3>Provider SMTP</h3>
+						<p>Your SMTP provider (Mailgun, SendGrid, Amazon SES, etc.) documents the exact SPF, DKIM and tracking-CNAME records to add for your sending domain. Follow their dashboard. No mail server to run.</p>
+					</div>
+					<div class="sh-dns-block" data-show-for="policy">
+						<h3>NIP-05 identity</h3>
+						<p>To serve NIP-05 from your domain, expose nmail-api's <code>/.well-known/nostr.json</code> at <code data-domain-tpl>https://example.com/.well-known/nostr.json</code> (reverse-proxy it).</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Testing -->
+		<section class="sh-testing">
+			<div class="container">
+				<div class="header">
+					<h2 class="section-title">Test it</h2>
+				</div>
+				<div class="sh-test-grid">
+					<div class="sh-test-block" data-show-for="inbound">
+						<h3>Inbound</h3>
+						<p>Send a normal email from any mail client to a bridged address, then watch it flow and confirm the Nostr event arrives in your client / relays.</p>
+						<CodeBlock code="docker compose logs -f haraka-webhook webhook" />
+					</div>
+					<div class="sh-test-block" data-show-for="outbound">
+						<h3>Outbound</h3>
+						<p>From a Nostr Mail client, send a message to a legacy email address and confirm delivery (check spam too). Watch the bridge:</p>
+						<CodeBlock code="docker compose logs -f bridge" />
+					</div>
+					<div class="sh-test-block" data-show-for="smtp-selfhost">
+						<h3>Self-hosted SMTP</h3>
+						<p>Verify SMTP auth + TLS, then score deliverability against a service like mail-tester.com before going live.</p>
+						<CodeBlock domainTpl code={`swaks --to test@example.com --from postmaster@example.com \\
+  --server mail.example.com:587 --tls \\
+  --auth LOGIN --auth-user postmaster@example.com --auth-password 'change-me-strong-password' \\
+  --body "Test from my bridge"`} />
+					</div>
+					<div class="sh-test-block" data-show-for="policy">
+						<h3>Policy &amp; identity</h3>
+						<p>Hit the NIP-05 endpoint and confirm a decision call appears in the nmail-api logs when you send or receive.</p>
+						<CodeBlock code="curl 'http://localhost:3000/.well-known/nostr.json?name=alice'" />
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Help -->
+		<section class="sh-help">
+			<div class="container">
+				<div class="header">
+					<h2 class="section-title">Need a hand?</h2>
+					<p>The component repositories carry the full reference docs.</p>
+				</div>
+				<div class="sh-help-links">
+					{stackItems.map((c) => (
+						<a class="sh-help-link" href={c.repoUrl} target="_blank" rel="noopener noreferrer" data-show-for={c.showFor.join(' ')}>
+							<span class="sh-help-name">{c.name}</span>
+							<span class="sh-help-role">{c.role}</span>
+						</a>
+					))}
+				</div>
+				<p class="sh-help-foot">Read the <a href="/#protocol">protocol overview</a>, or ask <a href="https://njump.me/npub1kg4sdvz3l4fr99n2jdz2vdxe2mpacva87hkdetv76ywacsfq5leqquw5te" target="_blank" rel="noopener noreferrer">Russell on Nostr</a>.</p>
+			</div>
+		</section>
+	</main>
+	<Footer />
+</BaseLayout>
+
+<style>
+	[hidden] {
+		display: none !important;
+	}
+	main {
+		overflow-x: hidden;
+	}
+	.header {
+		text-align: center;
+		margin-bottom: 60px;
+	}
+	.section-title {
+		font-size: 2.5rem;
+		font-weight: 800;
+		margin-bottom: 16px;
+	}
+
+	/* Intro */
+	.sh-hero {
+		padding: 80px 0 60px;
+		position: relative;
+		overflow: hidden;
+		text-align: center;
+	}
+	.sh-back {
+		display: inline-block;
+		position: relative;
+		z-index: 10;
+		color: var(--muted);
+		font-size: 0.9rem;
+		font-weight: 600;
+		margin-bottom: 40px;
+		transition: color 0.2s ease;
+	}
+	.sh-back:hover {
+		color: var(--accent-protocol);
+	}
+	.sh-hero-inner {
+		position: relative;
+		z-index: 10;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.sh-hero h1 {
+		font-size: 3.5rem;
+		font-weight: 800;
+		margin-bottom: 20px;
+		letter-spacing: -0.02em;
+	}
+	.sh-hero h1 span {
+		color: var(--accent-protocol);
+	}
+	.sh-hero p {
+		font-size: 1.2rem;
+		max-width: 680px;
+		margin-bottom: 32px;
+	}
+	.sh-cta {
+		padding: 14px 32px;
+		border-radius: 12px;
+		font-weight: 600;
+		font-size: 1rem;
+		border: 1px solid var(--border);
+		background: var(--card-bg);
+		color: var(--fg);
+		transition: all 0.2s ease;
+	}
+	.sh-cta:hover {
+		background: rgba(139, 92, 246, 0.05);
+		border-color: var(--accent-protocol);
+		transform: translateY(-2px);
+	}
+	.glow {
+		position: absolute;
+		top: -200px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 800px;
+		height: 600px;
+		background: var(--hero-gradient);
+		filter: blur(80px);
+		z-index: 1;
+	}
+
+	/* Configurator */
+	.sh-configurator {
+		padding: 20px 0 60px;
+	}
+	.sh-panel {
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 20px;
+		padding: 32px;
+	}
+	.sh-group {
+		border: 0;
+		padding: 0;
+		margin: 0 0 32px;
+	}
+	.sh-group:last-of-type {
+		margin-bottom: 24px;
+	}
+	.sh-group legend {
+		font-weight: 800;
+		font-size: 0.95rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--fg);
+		margin-bottom: 16px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.sh-pill {
+		font-size: 0.65rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--accent-protocol);
+		background: rgba(139, 92, 246, 0.12);
+		padding: 3px 8px;
+		border-radius: 999px;
+	}
+	.sh-options {
+		display: grid;
+		gap: 16px;
+	}
+	.sh-options-3 {
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	}
+	.sh-options-2 {
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	}
+	.sh-option {
+		display: block;
+		cursor: pointer;
+	}
+	.sh-option input {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		opacity: 0;
+		pointer-events: none;
+	}
+	.sh-option-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		height: 100%;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		padding: 18px 20px;
+		transition: border-color 0.2s ease, background 0.2s ease;
+	}
+	.sh-option:hover .sh-option-card {
+		border-color: var(--accent-protocol);
+	}
+	.sh-option input:checked + .sh-option-card {
+		border-color: var(--accent-protocol);
+		background: rgba(139, 92, 246, 0.08);
+	}
+	.sh-option input:focus-visible + .sh-option-card {
+		outline: 2px solid var(--accent-protocol);
+		outline-offset: 2px;
+	}
+	.sh-option-title {
+		font-weight: 600;
+		color: var(--fg);
+		padding-right: 24px;
+	}
+	.sh-option-desc {
+		font-size: 0.875rem;
+		color: var(--muted);
+		line-height: 1.4;
+	}
+	.sh-check {
+		position: absolute;
+		top: 16px;
+		right: 16px;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: var(--accent-protocol);
+		color: #fff;
+		font-size: 0.7rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		transition: opacity 0.2s ease;
+	}
+	.sh-option input:checked + .sh-option-card .sh-check {
+		opacity: 1;
+	}
+
+	/* Toggle */
+	.sh-toggle {
+		display: flex;
+		align-items: flex-start;
+		gap: 14px;
+		cursor: pointer;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		padding: 18px 20px;
+	}
+	.sh-toggle:hover {
+		border-color: var(--accent-protocol);
+	}
+	.sh-toggle input {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		opacity: 0;
+		pointer-events: none;
+	}
+	.sh-switch {
+		flex-shrink: 0;
+		position: relative;
+		width: 44px;
+		height: 24px;
+		border-radius: 999px;
+		background: var(--border);
+		transition: background 0.2s ease;
+		margin-top: 2px;
+	}
+	.sh-switch::after {
+		content: '';
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 18px;
+		height: 18px;
+		border-radius: 50%;
+		background: #fff;
+		transition: transform 0.2s ease;
+	}
+	.sh-toggle input:checked + .sh-switch {
+		background: var(--accent-protocol);
+	}
+	.sh-toggle input:checked + .sh-switch::after {
+		transform: translateX(20px);
+	}
+	.sh-toggle input:focus-visible + .sh-switch {
+		outline: 2px solid var(--accent-protocol);
+		outline-offset: 2px;
+	}
+	.sh-toggle-text {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.sh-toggle-title {
+		font-weight: 600;
+		color: var(--fg);
+	}
+	.sh-toggle-desc {
+		font-size: 0.875rem;
+		color: var(--muted);
+	}
+	.sh-reset {
+		font-family: inherit;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--muted);
+		background: none;
+		border: 0;
+		padding: 0;
+		cursor: pointer;
+		transition: color 0.2s ease;
+	}
+	.sh-reset:hover {
+		color: var(--accent-protocol);
+	}
+	.sh-domain-input {
+		width: 100%;
+		font-family: 'Fira Code', monospace;
+		font-size: 0.95rem;
+		color: var(--fg);
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		padding: 14px 16px;
+		transition: border-color 0.2s ease;
+	}
+	.sh-domain-input::placeholder {
+		color: var(--muted);
+	}
+	.sh-domain-input:focus {
+		outline: none;
+		border-color: var(--accent-protocol);
+	}
+	.sh-domain-input:focus-visible {
+		outline: 2px solid var(--accent-protocol);
+		outline-offset: 2px;
+	}
+	.sh-domain-help {
+		margin: 10px 0 0;
+		font-size: 0.85rem;
+	}
+	.sh-domain-help strong {
+		color: var(--fg);
+	}
+	.sh-domain-help code {
+		font-size: 0.85em;
+		color: var(--accent-protocol);
+		background: rgba(139, 92, 246, 0.1);
+		padding: 2px 6px;
+		border-radius: 6px;
+	}
+
+	/* Shared sections */
+	.sh-stack,
+	.sh-steps,
+	.sh-dns,
+	.sh-testing,
+	.sh-help {
+		padding: 80px 0;
+		border-top: 1px solid var(--border);
+	}
+
+	/* Your stack */
+	.sh-stack-summary {
+		font-size: 1.05rem;
+		max-width: 720px;
+		margin: 0 auto;
+	}
+	.sh-stack-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: 16px;
+	}
+	.sh-stack-item {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 16px;
+		padding: 20px 24px;
+		transition: transform 0.2s ease, border-color 0.2s ease;
+	}
+	.sh-stack-item:hover {
+		transform: translateY(-3px);
+		border-color: var(--accent-protocol);
+	}
+	.sh-stack-name {
+		font-family: 'Fira Code', monospace;
+		font-weight: 600;
+		color: var(--accent-protocol);
+	}
+	.sh-stack-role {
+		font-size: 0.9rem;
+		color: var(--muted);
+		line-height: 1.4;
+	}
+
+	/* Inline code in prose */
+	.sh-hero code,
+	.sh-note code,
+	.sh-prereq code,
+	.sh-step-role code,
+	.sh-step-head h3 code,
+	.header code,
+	.sh-dns-block code,
+	.sh-test-block code {
+		font-size: 0.85em;
+		color: var(--accent-protocol);
+		background: rgba(139, 92, 246, 0.1);
+		padding: 2px 6px;
+		border-radius: 6px;
+		white-space: nowrap;
+	}
+
+	/* Steps */
+	.sh-step {
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 20px;
+		padding: 32px;
+		margin-bottom: 24px;
+	}
+	.sh-step:last-child {
+		margin-bottom: 0;
+	}
+	.sh-step-head {
+		display: flex;
+		align-items: center;
+		gap: 20px;
+		margin-bottom: 24px;
+	}
+	.sh-step-num {
+		flex-shrink: 0;
+		width: 48px;
+		height: 48px;
+		border-radius: 12px;
+		background: rgba(139, 92, 246, 0.1);
+		color: var(--accent-protocol);
+		font-family: 'Fira Code', monospace;
+		font-size: 1.4rem;
+		font-weight: 800;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.sh-step-head h3 {
+		font-size: 1.4rem;
+		margin-bottom: 4px;
+	}
+	.sh-step-role {
+		font-size: 0.95rem;
+		margin: 0;
+	}
+	.sh-step-role a {
+		color: var(--accent-protocol);
+		font-weight: 600;
+	}
+	.sh-step-body {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.sh-step-body > div {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.sh-prereq,
+	.sh-note {
+		margin: 0;
+		line-height: 1.6;
+	}
+	.sh-prereq strong,
+	.sh-note strong {
+		color: var(--fg);
+	}
+	.sh-note {
+		font-size: 0.9rem;
+	}
+
+	/* DNS + testing */
+	.sh-dns-grid,
+	.sh-test-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+		gap: 24px;
+		align-items: start;
+	}
+	.sh-dns-block,
+	.sh-test-block {
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 16px;
+		padding: 28px;
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	.sh-dns-block h3,
+	.sh-test-block h3 {
+		font-size: 1.2rem;
+	}
+	.sh-dns-block p,
+	.sh-test-block p {
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.6;
+	}
+
+	/* Help */
+	.sh-help-links {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: 16px;
+		margin-bottom: 32px;
+	}
+	.sh-help-link {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 16px;
+		padding: 20px 24px;
+		transition: transform 0.2s ease, border-color 0.2s ease;
+	}
+	.sh-help-link:hover {
+		transform: translateY(-3px);
+		border-color: var(--accent-protocol);
+	}
+	.sh-help-name {
+		font-family: 'Fira Code', monospace;
+		font-weight: 600;
+		color: var(--accent-protocol);
+	}
+	.sh-help-role {
+		font-size: 0.9rem;
+		color: var(--muted);
+	}
+	.sh-help-foot {
+		text-align: center;
+	}
+	.sh-help-foot a {
+		color: var(--accent-protocol);
+		font-weight: 600;
+	}
+
+	@media (max-width: 768px) {
+		.sh-hero h1 {
+			font-size: 2.5rem;
+		}
+		.sh-panel {
+			padding: 24px;
+		}
+		.sh-step {
+			padding: 24px;
+		}
+		.sh-step-head {
+			gap: 14px;
+		}
+		.sh-step-num {
+			width: 40px;
+			height: 40px;
+			font-size: 1.2rem;
+		}
+		.section-title {
+			font-size: 2rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.sh-cta,
+		.sh-stack-item,
+		.sh-help-link,
+		.sh-option-card,
+		.sh-switch,
+		.sh-switch::after,
+		.sh-check {
+			transition: none;
+		}
+	}
+</style>
+
+<script>
+	import { deriveFacets, buildEnv, buildCompose, stackSummary } from '../data/selfHostCompose.js';
+	import { highlightEnv, highlightYaml } from '../data/highlight.js';
+
+	type State = { dir: string; smtp: string; policy: boolean; domain: string };
+
+	function cleanDomain(raw: string): string {
+		const d = (raw || '').trim().toLowerCase().replace(/[^a-z0-9.-]/g, '');
+		return /^[a-z0-9-]+\.[a-z0-9.-]+$/.test(d) ? d : 'example.com';
+	}
+
+	function getState(): State {
+		const dir = (document.querySelector('input[name="dir"]:checked') as HTMLInputElement | null)?.value || 'both';
+		const smtp = (document.querySelector('input[name="smtp"]:checked') as HTMLInputElement | null)?.value || 'provider';
+		const policy = (document.querySelector('input[name="policy"]') as HTMLInputElement | null)?.checked || false;
+		const domain = cleanDomain((document.querySelector('input[name="domain"]') as HTMLInputElement | null)?.value || '');
+		return { dir, smtp, policy, domain };
+	}
+
+	function setOutput(blockId: string, text: string, lang: string) {
+		const code = document.querySelector(`#${blockId} pre code`) as HTMLElement | null;
+		if (!code) return;
+		code.dataset.raw = text;
+		code.innerHTML = lang === 'yaml' ? highlightYaml(text) : highlightEnv(text);
+	}
+
+	function writeUrl(s: State) {
+		const params = new URLSearchParams();
+		params.set('dir', s.dir);
+		if (s.dir !== 'inbound') params.set('smtp', s.smtp);
+		if (s.policy) params.set('policy', '1');
+		if (s.domain !== 'example.com') params.set('domain', s.domain);
+		history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+	}
+
+	function applyDomain(domain: string) {
+		document.querySelectorAll('[data-domain-tpl]').forEach((el) => {
+			const target = (el.matches('figure.codeblock') ? el.querySelector('pre code') : el) as HTMLElement | null;
+			if (!target) return;
+			if (target.dataset.tpl === undefined) target.dataset.tpl = target.textContent || '';
+			target.textContent = target.dataset.tpl.split('example.com').join(domain);
+		});
+	}
+
+	function applyState() {
+		const s = getState();
+		const active = deriveFacets(s);
+		document.querySelectorAll('[data-show-for]').forEach((el) => {
+			const tokens = (el.getAttribute('data-show-for') || '').split(/\s+/).filter(Boolean);
+			(el as HTMLElement).hidden = !tokens.some((t) => active.has(t));
+		});
+		setOutput('sh-env-block', buildEnv(s), 'env');
+		setOutput('sh-compose-block', buildCompose(s), 'yaml');
+		applyDomain(s.domain);
+		const summary = document.querySelector('.sh-stack-summary');
+		if (summary) summary.textContent = stackSummary(s);
+		writeUrl(s);
+	}
+
+	function setRadio(name: string, value: string) {
+		const el = document.querySelector(`input[name="${name}"][value="${value}"]`) as HTMLInputElement | null;
+		if (el) el.checked = true;
+	}
+
+	function syncFromUrl() {
+		const p = new URLSearchParams(location.search);
+		const dirRaw = p.get('dir');
+		const dir = dirRaw === 'inbound' || dirRaw === 'outbound' || dirRaw === 'both' ? dirRaw : 'both';
+		const smtpRaw = p.get('smtp');
+		const smtp = smtpRaw === 'provider' || smtpRaw === 'selfhost' ? smtpRaw : 'provider';
+		setRadio('dir', dir);
+		setRadio('smtp', smtp);
+		const pol = document.querySelector('input[name="policy"]') as HTMLInputElement | null;
+		if (pol) pol.checked = p.get('policy') === '1';
+		const dom = document.querySelector('input[name="domain"]') as HTMLInputElement | null;
+		const domParam = p.get('domain');
+		if (dom && domParam) {
+			const cleaned = cleanDomain(domParam);
+			dom.value = cleaned === 'example.com' ? '' : cleaned;
+		}
+	}
+
+	function init() {
+		try {
+			syncFromUrl();
+			applyState();
+			const panel = document.querySelector('.sh-configurator');
+			panel?.addEventListener('change', applyState);
+			panel?.addEventListener('input', applyState);
+			document.querySelector('.sh-reset')?.addEventListener('click', () => {
+				setRadio('dir', 'both');
+				setRadio('smtp', 'provider');
+				const pol = document.querySelector('input[name="policy"]') as HTMLInputElement | null;
+				if (pol) pol.checked = false;
+				const dom = document.querySelector('input[name="domain"]') as HTMLInputElement | null;
+				if (dom) dom.value = '';
+				applyState();
+			});
+		} catch (err) {
+			console.error('self-host configurator init failed', err);
+		}
+	}
+
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', init);
+	} else {
+		init();
+	}
+</script>
