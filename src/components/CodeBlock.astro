@@ -3,15 +3,16 @@ interface Props {
 	code?: string;
 	label?: string;
 	domainTpl?: boolean;
+	lang?: 'env' | 'yaml';
 }
-const { code = '', label, domainTpl = false } = Astro.props;
+const { code = '', label, domainTpl = false, lang } = Astro.props;
 ---
 <figure class="codeblock" data-domain-tpl={domainTpl ? '' : undefined}>
 	<figcaption>
 		<span class="cb-label">{label}</span>
 		<button class="cb-copy" type="button" aria-label="Copy to clipboard">Copy</button>
 	</figcaption>
-	<pre><code>{code}<slot /></code></pre>
+	<pre><code data-lang={lang}>{code}<slot /></code></pre>
 </figure>
 
 <style>

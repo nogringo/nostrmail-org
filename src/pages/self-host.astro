@@ -125,7 +125,7 @@ const description =
 					</div>
 					<div class="sh-step-body">
 						<p class="sh-prereq"><strong>Prerequisites:</strong> a public IP whose reverse DNS (PTR) matches <code>MAIL_HOSTNAME</code>, your sending domain(s), and port 587 open.</p>
-						<CodeBlock domainTpl label="postfix .env" code={`MAIL_HOSTNAME=mail.example.com
+						<CodeBlock domainTpl lang="env" label="postfix .env" code={`MAIL_HOSTNAME=mail.example.com
 MAIL_DOMAINS=example.com
 SMTP_USERS=postmaster@example.com:change-me-strong-password
 SUBMISSION_PORT=587`} />
@@ -819,11 +819,15 @@ mail.example.com.       AAAA    2001:db8::1`} />
 		return { dir, smtp, policy, domain };
 	}
 
+	function paint(code: HTMLElement, text: string, lang: string) {
+		code.dataset.raw = text;
+		code.innerHTML = lang === 'yaml' ? highlightYaml(text) : highlightEnv(text);
+	}
+
 	function setOutput(blockId: string, text: string, lang: string) {
 		const code = document.querySelector(`#${blockId} pre code`) as HTMLElement | null;
 		if (!code) return;
-		code.dataset.raw = text;
-		code.innerHTML = lang === 'yaml' ? highlightYaml(text) : highlightEnv(text);
+		paint(code, text, lang);
 	}
 
 	function writeUrl(s: State) {
@@ -840,7 +844,18 @@ mail.example.com.       AAAA    2001:db8::1`} />
 			const target = (el.matches('figure.codeblock') ? el.querySelector('pre code') : el) as HTMLElement | null;
 			if (!target) return;
 			if (target.dataset.tpl === undefined) target.dataset.tpl = target.textContent || '';
-			target.textContent = target.dataset.tpl.split('example.com').join(domain);
+			const text = target.dataset.tpl.split('example.com').join(domain);
+			if (target.dataset.lang) paint(target, text, target.dataset.lang);
+			else target.textContent = text;
+		});
+	}
+
+	// Highlight static env/yaml blocks that aren't domain-templated (domain-
+	// templated ones are repainted by applyDomain). Runs once at init.
+	function highlightStatic() {
+		document.querySelectorAll('figure.codeblock:not([data-domain-tpl]) pre code[data-lang]').forEach((el) => {
+			const code = el as HTMLElement;
+			paint(code, code.textContent || '', code.dataset.lang || 'env');
 		});
 	}
 
@@ -886,6 +901,7 @@ mail.example.com.       AAAA    2001:db8::1`} />
 		try {
 			syncFromUrl();
 			applyState();
+			highlightStatic();
 			const panel = document.querySelector('.sh-configurator');
 			panel?.addEventListener('change', applyState);
 			panel?.addEventListener('input', applyState);
