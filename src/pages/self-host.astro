@@ -137,7 +137,6 @@ docker compose up -d
 docker compose exec rspamd rspamadm dkim_keygen -d example.com -s dkim -b 2048
 cd ..`} />
 						<p class="sh-note">It publishes 587 on the host, so the bridge reaches it at <code data-domain-tpl>mail.example.com</code> on port 587 (its <code>MAIL_HOSTNAME</code>). Use the <code>SMTP_USERS</code> account as <code>SMTP_USERNAME</code> / <code>SMTP_PASSWORD</code> in the <code>.env</code> below, and publish the DNS records further down before sending.</p>
-						<p class="sh-note">If the bridge can't connect (some hosts, like AWS, don't let a machine reach its own public IP): set <code>SMTP_HOST=host.docker.internal</code> and add <code>extra_hosts: ["host.docker.internal:host-gateway"]</code> to the bridge service, or join both stacks to a shared Docker network and use <code>SMTP_HOST=postfix</code>.</p>
 					</div>
 				</article>
 
