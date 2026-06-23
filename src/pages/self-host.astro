@@ -105,29 +105,12 @@ const description =
 			</div>
 		</section>
 
-		<!-- Your stack -->
-		<section class="sh-stack">
-			<div class="container">
-				<div class="header">
-					<h2 class="section-title">Your stack</h2>
-					<p class="sh-stack-summary" aria-live="polite"></p>
-				</div>
-				<div class="sh-stack-grid">
-					{stackItems.map((c) => (
-						<a class="sh-stack-item" href={`#setup`} data-show-for={c.showFor.join(' ')}>
-							<span class="sh-stack-name">{c.name}</span>
-							<span class="sh-stack-role">{c.role}</span>
-						</a>
-					))}
-				</div>
-			</div>
-		</section>
-
 		<!-- Setup -->
 		<section id="setup" class="sh-steps">
 			<div class="container">
 				<div class="header">
 					<h2 class="section-title">Setup</h2>
+					<p class="sh-stack-summary" aria-live="polite"></p>
 					<p>Everything runs from published images with Docker Compose. The files below are generated for your selection. Internal wiring (service hostnames, the shared signing key) is already filled in.</p>
 				</div>
 
@@ -617,7 +600,6 @@ mail.example.com.       AAAA    2001:db8::1`} />
 	}
 
 	/* Shared sections */
-	.sh-stack,
 	.sh-steps,
 	.sh-dns,
 	.sh-testing,
@@ -626,40 +608,11 @@ mail.example.com.       AAAA    2001:db8::1`} />
 		border-top: 1px solid var(--border);
 	}
 
-	/* Your stack */
+	/* Setup summary */
 	.sh-stack-summary {
 		font-size: 1.05rem;
 		max-width: 720px;
 		margin: 0 auto;
-	}
-	.sh-stack-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-		gap: 16px;
-	}
-	.sh-stack-item {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		background: var(--card-bg);
-		border: 1px solid var(--border);
-		border-radius: 16px;
-		padding: 20px 24px;
-		transition: transform 0.2s ease, border-color 0.2s ease;
-	}
-	.sh-stack-item:hover {
-		transform: translateY(-3px);
-		border-color: var(--accent-protocol);
-	}
-	.sh-stack-name {
-		font-family: 'Fira Code', monospace;
-		font-weight: 600;
-		color: var(--accent-protocol);
-	}
-	.sh-stack-role {
-		font-size: 0.9rem;
-		color: var(--muted);
-		line-height: 1.4;
 	}
 
 	/* Inline code in prose */
@@ -837,7 +790,6 @@ mail.example.com.       AAAA    2001:db8::1`} />
 
 	@media (prefers-reduced-motion: reduce) {
 		.sh-cta,
-		.sh-stack-item,
 		.sh-help-link,
 		.sh-option-card,
 		.sh-switch,
