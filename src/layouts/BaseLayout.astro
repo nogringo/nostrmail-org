@@ -79,6 +79,13 @@ const {
 		--muted: #888;
 		--card-bg: #161616;
 		--border: #333;
+		--code-bg: #0E0E0E;
+		--code-fg: #E6E6E6;
+		--tok-comment: #6e6e6e;
+		--tok-key: #c4b5fd;
+		--tok-string: #9bdcb4;
+		--tok-number: #e0b080;
+		--tok-punct: #7a7a7a;
 		--hero-gradient: radial-gradient(circle, rgba(139, 92, 246, 0.18) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 100%);
 	}
 
@@ -89,6 +96,13 @@ const {
 			--muted: #666;
 			--card-bg: #F8F9FA;
 			--border: #E9ECEF;
+			--code-bg: #F1F3F5;
+			--code-fg: #1A1A1A;
+			--tok-comment: #8a8a8a;
+			--tok-key: #6d28d9;
+			--tok-string: #2f8f6f;
+			--tok-number: #9a6a00;
+			--tok-punct: #999999;
 			--hero-gradient: radial-gradient(circle, rgba(139, 92, 246, 0.10) 0%, rgba(139, 92, 246, 0.03) 50%, transparent 100%);
 		}
 	}
@@ -125,4 +139,9 @@ const {
 		line-height: 1.6;
 		color: var(--muted);
 	}
+	.tok-comment { color: var(--tok-comment); font-style: italic; }
+	.tok-key { color: var(--tok-key); }
+	.tok-string { color: var(--tok-string); }
+	.tok-number { color: var(--tok-number); }
+	.tok-punct { color: var(--tok-punct); }
 </style>

@@ -1,0 +1,127 @@
+---
+interface Props {
+	code?: string;
+	label?: string;
+	domainTpl?: boolean;
+	lang?: 'env' | 'yaml';
+}
+const { code = '', label, domainTpl = false, lang } = Astro.props;
+---
+<figure class="codeblock" data-domain-tpl={domainTpl ? '' : undefined}>
+	<figcaption>
+		<span class="cb-label">{label}</span>
+		<button class="cb-copy" type="button" aria-label="Copy to clipboard">Copy</button>
+	</figcaption>
+	<pre><code data-lang={lang}>{code}<slot /></code></pre>
+</figure>
+
+<style>
+	.codeblock {
+		margin: 0;
+		background: var(--code-bg);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		overflow: hidden;
+	}
+	figcaption {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 8px 12px 8px 16px;
+		border-bottom: 1px solid var(--border);
+		min-height: 42px;
+	}
+	.cb-label {
+		font-family: 'Fira Code', monospace;
+		font-size: 0.75rem;
+		color: var(--muted);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.cb-copy {
+		flex-shrink: 0;
+		font-family: 'Inter', system-ui, sans-serif;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--fg);
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		padding: 6px 14px;
+		cursor: pointer;
+		transition: border-color 0.2s ease, color 0.2s ease;
+	}
+	.cb-copy:hover {
+		border-color: var(--accent-protocol);
+		color: var(--accent-protocol);
+	}
+	.cb-copy:focus-visible {
+		outline: 2px solid var(--accent-protocol);
+		outline-offset: 2px;
+	}
+	.cb-copy.copied {
+		border-color: var(--accent-protocol);
+		color: var(--accent-protocol);
+	}
+	pre {
+		margin: 0;
+		padding: 16px;
+		overflow-x: auto;
+		color: var(--code-fg);
+		font-size: 0.85rem;
+		line-height: 1.6;
+	}
+	code {
+		font-family: 'Fira Code', monospace;
+		white-space: pre;
+	}
+</style>
+
+<script>
+	// One delegated listener handles every CodeBlock on the page, including
+	// instances inside currently-hidden steps. Astro dedupes this hoisted
+	// script across component instances, so it registers exactly once.
+	document.addEventListener('click', async (e) => {
+		const target = e.target as HTMLElement;
+		const btn = target.closest('.cb-copy') as HTMLButtonElement | null;
+		if (!btn) return;
+		const codeEl = btn.closest('.codeblock')?.querySelector('code') as HTMLElement | null;
+		if (!codeEl) return;
+		// Prefer the raw text stashed by the page (highlighted blocks wrap text in spans)
+		const raw = codeEl.dataset.raw !== undefined ? codeEl.dataset.raw : codeEl.innerText;
+
+		const flash = (text: string) => {
+			btn.textContent = text;
+			btn.classList.add('copied');
+			window.setTimeout(() => {
+				btn.textContent = 'Copy';
+				btn.classList.remove('copied');
+			}, 1500);
+		};
+
+		try {
+			if (navigator.clipboard && window.isSecureContext) {
+				await navigator.clipboard.writeText(raw);
+				flash('Copied!');
+				return;
+			}
+			throw new Error('clipboard unavailable');
+		} catch {
+			// Fallback for non-secure contexts / older browsers: select the text
+			// so the user can copy with Ctrl/Cmd+C.
+			const range = document.createRange();
+			range.selectNodeContents(codeEl);
+			const sel = window.getSelection();
+			sel?.removeAllRanges();
+			sel?.addRange(range);
+			try {
+				const ok = document.execCommand('copy');
+				flash(ok ? 'Copied!' : 'Press Ctrl/Cmd+C');
+			} catch {
+				flash('Press Ctrl/Cmd+C');
+			}
+		}
+	});
+</script>
