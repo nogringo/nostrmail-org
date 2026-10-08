@@ -37,6 +37,7 @@
 	
 	<div class="bottom container">
 		<p>MIT licensed</p>
+		<a href="/privacy">Privacy policy</a>
 	</div>
 </footer>
 
@@ -81,8 +82,18 @@
 	.bottom {
 		border-top: 1px solid var(--border);
 		padding-top: 40px;
-		text-align: center;
+		display: flex;
+		justify-content: center;
+		align-items: baseline;
+		gap: 24px;
 		font-size: 0.875rem;
+	}
+	.bottom a {
+		color: var(--muted);
+		transition: color 0.2s ease;
+	}
+	.bottom a:hover {
+		color: var(--accent-app);
 	}
 	@media (max-width: 768px) {
 		.footer-grid {

@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Footer from '../components/Footer.astro';
+import { Content } from '../content/privacy.md';
+
+const title = 'Nmail Privacy Policy | Nostr Mail';
+const description =
+	'How Nmail, its servers and nostrmail.org handle your information: local storage, Nostr relays, the email bridge, push notifications and file hosting.';
+---
+
+<BaseLayout title={title} description={description}>
+	<main>
+		<section class="legal">
+			<div class="container">
+				<a href="/" class="legal-back">&larr; nostrmail.org</a>
+				<article class="prose">
+					<Content />
+				</article>
+			</div>
+		</section>
+	</main>
+	<Footer />
+</BaseLayout>
+
+<style>
+	.legal {
+		padding: 80px 0 100px;
+	}
+	.legal-back {
+		display: inline-block;
+		color: var(--muted);
+		font-size: 0.9rem;
+		font-weight: 600;
+		margin-bottom: 40px;
+		transition: color 0.2s ease;
+	}
+	.legal-back:hover {
+		color: var(--accent-protocol);
+	}
+	.prose {
+		max-width: 760px;
+	}
+	.prose :global(h1) {
+		font-size: 3rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		margin-bottom: 16px;
+	}
+	.prose :global(h2) {
+		font-size: 1.5rem;
+		font-weight: 800;
+		margin: 48px 0 16px;
+	}
+	.prose :global(p),
+	.prose :global(li) {
+		color: var(--muted);
+		line-height: 1.7;
+	}
+	.prose :global(p) {
+		margin-bottom: 16px;
+	}
+	.prose :global(ul) {
+		padding-left: 1.25rem;
+		margin-bottom: 16px;
+	}
+	.prose :global(li) {
+		margin-bottom: 8px;
+	}
+	.prose :global(h3) {
+		font-size: 1.125rem;
+		font-weight: 800;
+		margin: 32px 0 12px;
+	}
+	.prose :global(table) {
+		width: 100%;
+		border-collapse: collapse;
+		margin-bottom: 16px;
+	}
+	.prose :global(th),
+	.prose :global(td) {
+		text-align: left;
+		padding: 10px 12px;
+		border-bottom: 1px solid var(--border);
+		color: var(--muted);
+		line-height: 1.5;
+	}
+	.prose :global(th) {
+		color: var(--fg);
+		font-weight: 600;
+	}
+	.prose :global(strong) {
+		color: var(--fg);
+	}
+	.prose :global(a) {
+		color: var(--accent-protocol);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.prose :global(a:hover) {
+		color: var(--accent-hover);
+	}
+	.prose :global(code) {
+		font-size: 0.9em;
+		background: var(--code-bg);
+		color: var(--code-fg);
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		padding: 2px 6px;
+		overflow-wrap: anywhere;
+	}
+	@media (max-width: 768px) {
+		.legal {
+			padding: 48px 0 72px;
+		}
+		.prose :global(h1) {
+			font-size: 2.25rem;
+		}
+	}
+</style>

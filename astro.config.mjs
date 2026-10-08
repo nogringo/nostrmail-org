@@ -5,4 +5,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://nostrmail.org',
   integrations: [sitemap()],
+  markdown: {
+    smartypants: false,
+  },
 });
