@@ -2,7 +2,8 @@
 interface DnsRecord {
 	type: string;
 	name: string;
-	value: string;
+	value?: string;
+	placeholder?: string;
 	note?: string;
 }
 interface Props {
@@ -24,11 +25,15 @@ const { records } = Astro.props;
 				<td class="dns-type"><span>{r.type}</span></td>
 				{[r.name, r.value].map((text, i) => (
 					<td class={i === 0 ? 'dns-name' : 'dns-value'}>
-						<button type="button" class="dns-copy" title="Copy">
-							<code data-domain-tpl>{text}</code>
-							<svg class="icon-copy" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-							<svg class="icon-check" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-						</button>
+						{text === undefined ? (
+							<span class="dns-placeholder">{r.placeholder}</span>
+						) : (
+							<button type="button" class="dns-copy" title="Copy">
+								<code data-domain-tpl>{text}</code>
+								<svg class="icon-copy" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+								<svg class="icon-check" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+							</button>
+						)}
 						{i === 1 && r.note && <span class="dns-note">{r.note}</span>}
 					</td>
 				))}
@@ -134,6 +139,15 @@ const { records } = Astro.props;
 		display: block;
 		opacity: 1;
 		color: var(--accent-protocol);
+	}
+	.dns-placeholder {
+		display: inline-block;
+		font-size: 0.8rem;
+		font-style: italic;
+		color: var(--muted);
+		border: 1px dashed var(--muted);
+		border-radius: 6px;
+		padding: 1px 8px;
 	}
 	.dns-note {
 		display: block;

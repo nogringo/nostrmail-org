@@ -200,7 +200,7 @@ docker compose pull nmail-api && docker compose up -d`} />
 			<div class="container">
 				<div class="header">
 					<h2 class="section-title">DNS records</h2>
-					<p>Add these at your DNS provider for the domain set above, replacing the sample IPs and DKIM key with your own. Names are shown in full: if your provider adds the domain itself, enter only the part before it.</p>
+					<p>Add these at your DNS provider for the domain set above. Names are shown in full: if your provider adds the domain itself, enter only the part before it.</p>
 				</div>
 				<div class="sh-card-list">
 					<article class="sh-card" data-show-for="inbound">
@@ -208,21 +208,24 @@ docker compose pull nmail-api && docker compose up -d`} />
 						<p>Route legacy mail to your bridge server.</p>
 						<DnsRecords records={[
 							{ type: 'MX', name: 'example.com', value: 'mail.example.com', note: 'Priority 10' },
-							{ type: 'A', name: 'mail.example.com', value: '203.0.113.10', note: "Your server's IPv4" },
-							{ type: 'AAAA', name: 'mail.example.com', value: '2001:db8::1', note: 'Only if port 25 is reachable over IPv6' },
+							{ type: 'A', name: 'mail.example.com', placeholder: "Your server's IPv4" },
+							{ type: 'AAAA', name: 'mail.example.com', placeholder: "Your server's IPv6", note: 'Only if port 25 is reachable over IPv6' },
 						]} />
 					</article>
 					<article class="sh-card" data-show-for="smtp-selfhost">
 						<h3>Self-hosted SMTP</h3>
-						<p>Lets receiving servers trust the mail you send. Reverse DNS (PTR) is set with your hosting provider, not your DNS provider.</p>
+						<p>Lets receiving servers trust the mail you send.</p>
 						<DnsRecords records={[
-							{ type: 'A', name: 'mail.example.com', value: '203.0.113.10', note: "Your server's IPv4" },
-							{ type: 'AAAA', name: 'mail.example.com', value: '2001:db8::1', note: "Your server's IPv6, if it has one" },
-							{ type: 'PTR', name: '203.0.113.10', value: 'mail.example.com', note: 'At your hosting provider. Must match MAIL_HOSTNAME' },
+							{ type: 'A', name: 'mail.example.com', placeholder: "Your server's IPv4" },
+							{ type: 'AAAA', name: 'mail.example.com', placeholder: "Your server's IPv6", note: 'Only if it has one' },
 							{ type: 'TXT', name: 'example.com', value: 'v=spf1 mx ~all', note: 'SPF' },
-							{ type: 'TXT', name: 'dkim._domainkey.example.com', value: 'v=DKIM1; k=rsa; p=MIGfMA0GCSq...your-public-key...', note: 'DKIM: paste the public key printed by rspamadm dkim_keygen' },
+							{ type: 'TXT', name: 'dkim._domainkey.example.com', placeholder: 'The record printed by rspamadm dkim_keygen', note: 'DKIM' },
 							{ type: 'TXT', name: '_dmarc.example.com', value: 'v=DMARC1; p=none; rua=mailto:postmaster@example.com', note: 'DMARC' },
 						]} />
+						<div class="sh-dns-aside">
+							<p><strong>Reverse DNS (PTR)</strong> <span class="sh-pill">Hosting provider</span></p>
+							<p>This one is not set at your DNS provider. In your server host's panel (often under "Reverse DNS" or "rDNS"), point your server's IP to <code data-domain-tpl>mail.example.com</code>, the same value as <code>MAIL_HOSTNAME</code>.</p>
+						</div>
 					</article>
 					<article class="sh-card" data-show-for="smtp-provider">
 						<h3>Provider SMTP</h3>
@@ -735,6 +738,25 @@ docker compose pull nmail-api && docker compose up -d`} />
 	.sh-card p code {
 		white-space: normal;
 		overflow-wrap: anywhere;
+	}
+	.sh-dns-aside {
+		margin-top: 4px;
+		padding: 16px 18px;
+		border: 1px dashed var(--border);
+		border-radius: 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+	.sh-dns-aside p {
+		margin: 0;
+	}
+	.sh-dns-aside strong {
+		color: var(--fg);
+	}
+	.sh-dns-aside .sh-pill {
+		margin-left: 6px;
+		vertical-align: 1px;
 	}
 
 	/* Help */
