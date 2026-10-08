@@ -151,7 +151,7 @@ cd ..`} />
 					</div>
 					<div class="sh-step-body">
 						<div id="sh-env-block"><CodeBlock label=".env" code="" /></div>
-						<p class="sh-note" data-show-for="inbound">Generate <code>WEBHOOK_SIGNING_KEY</code> with <code>openssl rand -hex 32</code>. It is defined once here and shared by both inbound services automatically.</p>
+						<p class="sh-note" data-show-for="inbound">Generate <code>WEBHOOK_SIGNING_KEY</code> with <code>openssl rand -hex 32</code>. It is defined once here and every service that needs it reads it from this file.</p>
 						<p class="sh-note" data-show-for="policy">Generate each decision token with <code>openssl rand -hex 32</code> too.</p>
 						<p class="sh-note" data-show-for="policy-inbound">Set <code>NIP05_PRIVATE_READERS</code> to the npub of <code>NOSTR_PRIVATE_KEY</code>, otherwise mail to private aliases is rejected.</p>
 					</div>

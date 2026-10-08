@@ -8,7 +8,9 @@
 // push notification settings are left to the nmail-api README). The compose
 // loads it with `env_file: .env`; only the handful of values that two services
 // cannot share in one file stay pinned in the compose: the in-container PORT
-// (webhook 8080 vs nmail-api 3000), DATA_DIR, and postgres infra vars.
+// (webhook 8080 vs nmail-api 3000), DATA_DIR, and postgres infra vars. Secrets
+// two services know under different names (decision tokens, the postgres
+// password) are set once in .env and interpolated into the compose.
 
 /**
  * @typedef {{ dir: 'inbound'|'outbound'|'both', smtp: 'provider'|'selfhost', policy: boolean, domain?: string }} State
@@ -45,7 +47,7 @@ export function buildEnv(s) {
 		L.push('# Where Haraka POSTs received mail (internal service URL)');
 		L.push('WEBHOOK_URL=http://webhook:8080/mime');
 		L.push('');
-		L.push('# Shared signing secret, use the SAME value for the webhook below');
+		L.push('# Signing secret shared with the webhook' + (policy ? ' and nmail-api services' : ' service') + ' below');
 		L.push('# (generate with: openssl rand -hex 32)');
 		L.push('WEBHOOK_SIGNING_KEY=replace-with-a-random-hex-secret');
 		L.push('');
@@ -64,9 +66,8 @@ export function buildEnv(s) {
 		L.push('');
 		if (policy) {
 			L.push('# Inbound policy API (nmail-api)');
+			L.push('# (its token is INBOUND_DECISION_TOKEN in the nmail-api section)');
 			L.push('WEBHOOK_DECISION_URL=http://nmail-api:3000/inbound/decision');
-			L.push('# Must match INBOUND_DECISION_TOKEN in the nmail-api section');
-			L.push('WEBHOOK_DECISION_TOKEN=replace-with-the-inbound-decision-token');
 			L.push('WEBHOOK_DECISION_PAYLOAD_MODE=minimal');
 			L.push('');
 			L.push('# Mail to role addresses (postmaster@, abuse@, ...) goes to the nmail-api');
@@ -93,9 +94,6 @@ export function buildEnv(s) {
 		L.push('');
 		L.push('# Nostr private key that signs the published events (nsec or hex)');
 		L.push('NOSTR_PRIVATE_KEY=nsec1...');
-		L.push('');
-		L.push('# Same value as WEBHOOK_SIGNING_KEY above');
-		L.push('WEBHOOK_SIGNING_KEY=replace-with-a-random-hex-secret');
 		L.push('');
 		L.push('# Reject webhook signatures older/newer than this many seconds');
 		L.push('SIGNATURE_TOLERANCE_SECONDS=900');
@@ -140,9 +138,8 @@ export function buildEnv(s) {
 		L.push('');
 		if (policy) {
 			L.push('# Outbound policy API (nmail-api)');
+			L.push('# (its token is OUTBOUND_DECISION_TOKEN in the nmail-api section)');
 			L.push('DECISION_URL=http://nmail-api:3000/outbound/decision');
-			L.push('# Must match OUTBOUND_DECISION_TOKEN in the nmail-api section');
-			L.push('DECISION_TOKEN=replace-with-the-outbound-decision-token');
 			L.push('DECISION_PAYLOAD_MODE=minimal');
 		} else {
 			L.push('# Outbound policy API (optional), leave URL blank to allow all');
@@ -159,10 +156,8 @@ export function buildEnv(s) {
 		L.push('#  (nmail-api listens on 3000, pinned in docker-compose.yml)');
 		L.push('# ============================================================');
 		L.push('');
-		L.push('# Postgres password, also update DATABASE_URL below if you change it');
+		L.push('# Postgres password (docker-compose.yml builds DATABASE_URL from it)');
 		L.push('POSTGRES_PASSWORD=change-me');
-		L.push('# Connection string the API uses to reach postgres');
-		L.push('DATABASE_URL=postgres://nmail:change-me@postgres:5432/nmail');
 		L.push('');
 		L.push('# Token required by the inbound SMTP policy (openssl rand -hex 32)');
 		L.push('INBOUND_DECISION_TOKEN=replace-with-the-inbound-decision-token');
@@ -204,6 +199,10 @@ export function buildCompose(s) {
 		L.push('    image: ghcr.io/nogringo/haraka-webhook:latest');
 		L.push('    restart: unless-stopped');
 		L.push('    env_file: .env');
+		if (policy) {
+			L.push('    environment:');
+			L.push('      WEBHOOK_DECISION_TOKEN: ${INBOUND_DECISION_TOKEN}');
+		}
 		L.push('    ports:');
 		L.push('      - "25:25/tcp"');
 		L.push('    volumes:');
@@ -228,6 +227,10 @@ export function buildCompose(s) {
 		L.push('    image: ghcr.io/nogringo/bridge-nostr-smtp:latest');
 		L.push('    restart: unless-stopped');
 		L.push('    env_file: .env');
+		if (policy) {
+			L.push('    environment:');
+			L.push('      DECISION_TOKEN: ${OUTBOUND_DECISION_TOKEN}');
+		}
 		L.push('    volumes:');
 		L.push('      - bridge-data:/data');
 		vols.push('bridge-data');
@@ -246,6 +249,7 @@ export function buildCompose(s) {
 		L.push('      - "3000:3000"');
 		L.push('    environment:');
 		L.push('      PORT: "3000"');
+		L.push('      DATABASE_URL: postgres://nmail:${POSTGRES_PASSWORD:-change-me}@postgres:5432/nmail');
 		L.push('');
 		L.push('  postgres:');
 		L.push('    image: postgres:18-alpine');
