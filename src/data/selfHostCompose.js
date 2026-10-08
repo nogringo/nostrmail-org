@@ -3,11 +3,12 @@
 // used for show/hide, and a plain-English stack summary. No DOM here so it can
 // be unit tested in Node and imported by the page's client script alike.
 //
-// The .env carries EVERY variable from each selected component's .env.example
-// (merged into one file, with merged-stack values). The compose loads it with
-// `env_file: .env`; only the handful of values that two services cannot share
-// in one file stay pinned in the compose: the in-container PORT (webhook 8080
-// vs nmail-api 3000), DATA_DIR, and postgres infra vars.
+// The .env carries the variables a self-hoster needs from each selected
+// component's .env.example (merged into one file, with merged-stack values;
+// push notification settings are left to the nmail-api README). The compose
+// loads it with `env_file: .env`; only the handful of values that two services
+// cannot share in one file stay pinned in the compose: the in-container PORT
+// (webhook 8080 vs nmail-api 3000), DATA_DIR, and postgres infra vars.
 
 /**
  * @typedef {{ dir: 'inbound'|'outbound'|'both', smtp: 'provider'|'selfhost', policy: boolean, domain?: string }} State
@@ -52,6 +53,10 @@ export function buildEnv(s) {
 		L.push('ACCEPT_ALL_RECIPIENTS=false');
 		L.push('ACCEPTED_DOMAINS=' + domain);
 		L.push('');
+		L.push('# Public name of this server (the MX host), used in the SMTP banner,');
+		L.push('# Received and Authentication-Results');
+		L.push('SMTP_HOSTNAME=mail.' + domain);
+		L.push('');
 		L.push('# Opportunistic STARTTLS on port 25 (leave the two *_PATH blank to disable)');
 		L.push('SMTP_TLS_CERT_DIR=./certs');
 		L.push('SMTP_TLS_CERT_PATH=');
@@ -63,6 +68,10 @@ export function buildEnv(s) {
 			L.push('# Must match INBOUND_DECISION_TOKEN in the nmail-api section');
 			L.push('WEBHOOK_DECISION_TOKEN=replace-with-the-inbound-decision-token');
 			L.push('WEBHOOK_DECISION_PAYLOAD_MODE=minimal');
+			L.push('');
+			L.push('# Mail to role addresses (postmaster@, abuse@, ...) goes to the nmail-api');
+			L.push('# /admin console instead of Nostr');
+			L.push('WEBHOOK_ROLE_URL=http://nmail-api:3000/inbound/role');
 		} else {
 			L.push('# Inbound policy API (optional), payload detail: minimal | summary | full');
 			L.push('WEBHOOK_DECISION_PAYLOAD_MODE=minimal');
@@ -166,6 +175,16 @@ export function buildEnv(s) {
 		L.push('OUTBOUND_MAX_BODY_BYTES=33554432');
 		L.push('# Password that enables the admin console at /admin');
 		L.push('ADMIN_PASSWORD=change-me-admin');
+		L.push('');
+		if (inbound) {
+			L.push('# npub (or hex pubkey) of NOSTR_PRIVATE_KEY above, so the inbound webhook');
+			L.push('# can resolve private aliases through NIP-98 signed NIP-05 lookups');
+			L.push('NIP05_PRIVATE_READERS=npub1...');
+			L.push('');
+		}
+		L.push('# Relays that NIP-62 vanish requests may name to delete an account here');
+		L.push('# (comma-separated, e.g. your own relay). ALL_RELAYS is always accepted.');
+		L.push('ACCOUNT_DELETION_RELAY_URLS=');
 		L.push('');
 	}
 

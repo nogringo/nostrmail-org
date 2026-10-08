@@ -153,6 +153,7 @@ cd ..`} />
 						<div id="sh-env-block"><CodeBlock label=".env" code="" /></div>
 						<p class="sh-note" data-show-for="inbound">Generate <code>WEBHOOK_SIGNING_KEY</code> with <code>openssl rand -hex 32</code>. It is defined once here and shared by both inbound services automatically.</p>
 						<p class="sh-note" data-show-for="policy">Generate each decision token with <code>openssl rand -hex 32</code> too.</p>
+						<p class="sh-note" data-show-for="policy-inbound">Set <code>NIP05_PRIVATE_READERS</code> to the npub of <code>NOSTR_PRIVATE_KEY</code>, otherwise mail to private aliases is rejected.</p>
 					</div>
 				</article>
 
@@ -182,10 +183,11 @@ cd ..`} />
 					<div class="sh-step-body">
 						<CodeBlock code="docker compose up -d" />
 						<div data-show-for="policy">
-							<p class="sh-note">Then apply the nmail-api database migrations once (they ship as SQL in the repo):</p>
-							<CodeBlock label="One-time database migrations" code={`git clone --depth 1 https://github.com/nogringo/nmail-api.git
-for f in nmail-api/migrations/*.sql; do docker compose exec -T postgres psql -U nmail -d nmail < "$f"; done`} />
-							<p class="sh-note">NIP-05 is then served at <code>/.well-known/nostr.json?name=&lt;local-part&gt;</code>, and the admin console at <code>/admin</code> when you set <code>ADMIN_PASSWORD</code>.</p>
+							<p class="sh-note">nmail-api sets up and upgrades its database at startup. NIP-05 is then served at <code>/.well-known/nostr.json?name=&lt;local-part&gt;</code>, and the admin console at <code>/admin</code> when you set <code>ADMIN_PASSWORD</code>.</p>
+							<p class="sh-note">Upgrading an install made with an earlier version of this guide? nmail-api refuses to start until its database reaches migration 011. Catch it up once, then pull:</p>
+							<CodeBlock label="One-time catch-up for older installs" code={`git clone --depth 1 https://github.com/nogringo/nmail-api.git
+for f in nmail-api/migrations/0{07,08,09,10,11}_*.sql; do docker compose exec -T postgres psql -U nmail -d nmail < "$f"; done
+docker compose pull nmail-api && docker compose up -d`} />
 						</div>
 					</div>
 				</article>
@@ -202,7 +204,7 @@ for f in nmail-api/migrations/*.sql; do docker compose exec -T postgres psql -U 
 				<div class="sh-dns-grid">
 					<div class="sh-dns-block" data-show-for="inbound">
 						<h3>Inbound (MX)</h3>
-						<p>Route legacy mail to your bridge server. Add an A/AAAA record for the mail host too.</p>
+						<p>Route legacy mail to your bridge server. Add an A record for the mail host too, and an AAAA only if port 25 is reachable over IPv6.</p>
 						<CodeBlock domainTpl label="MX + A" code={`example.com.            MX   10 mail.example.com.
 mail.example.com.       A       203.0.113.10`} />
 					</div>
@@ -221,7 +223,7 @@ mail.example.com.       AAAA    2001:db8::1`} />
 					</div>
 					<div class="sh-dns-block" data-show-for="policy">
 						<h3>NIP-05 identity</h3>
-						<p>To serve NIP-05 from your domain, expose nmail-api's <code>/.well-known/nostr.json</code> at <code data-domain-tpl>https://example.com/.well-known/nostr.json</code> (reverse-proxy it).</p>
+						<p>To serve NIP-05 from your domain, expose nmail-api's <code>/.well-known/nostr.json</code> at <code data-domain-tpl>https://example.com/.well-known/nostr.json</code> (reverse-proxy it). Keep the original <code>Host</code> header (Caddy does by default, nginx needs <code>proxy_set_header Host $host</code>): private aliases are resolved with NIP-98 requests signed for that host.</p>
 					</div>
 				</div>
 			</div>
