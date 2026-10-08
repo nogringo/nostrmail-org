@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Footer from '../components/Footer.astro';
 import CodeBlock from '../components/CodeBlock.astro';
+import DnsRecords from '../components/DnsRecords.astro';
 import { components } from '../data/selfHostComponents';
 
 const stackItems = [...components].sort((a, b) => a.order - b.order);
@@ -199,32 +200,38 @@ docker compose pull nmail-api && docker compose up -d`} />
 			<div class="container">
 				<div class="header">
 					<h2 class="section-title">DNS records</h2>
-					<p>Configure these at your DNS provider, using the domain from the configurator above. Replace the IPs and DKIM key with your own.</p>
+					<p>Add these at your DNS provider for the domain set above, replacing the sample IPs and DKIM key with your own. Names are shown in full: if your provider adds the domain itself, enter only the part before it.</p>
 				</div>
-				<div class="sh-dns-grid">
-					<div class="sh-dns-block" data-show-for="inbound">
-						<h3>Inbound (MX)</h3>
-						<p>Route legacy mail to your bridge server. Add an A record for the mail host too, and an AAAA only if port 25 is reachable over IPv6.</p>
-						<CodeBlock domainTpl label="MX + A" code={`example.com.            MX   10 mail.example.com.
-mail.example.com.       A       203.0.113.10`} />
-					</div>
-					<div class="sh-dns-block" data-show-for="smtp-selfhost">
-						<h3>Self-hosted SMTP (deliverability)</h3>
-						<p>Reverse DNS (PTR) for your IP must resolve to <code>mail.example.com</code>. Set this with your hosting provider; it must match <code>MAIL_HOSTNAME</code>. Then publish:</p>
-						<CodeBlock domainTpl label="A / AAAA" code={`mail.example.com.       A       203.0.113.10
-mail.example.com.       AAAA    2001:db8::1`} />
-						<CodeBlock domainTpl label="SPF (TXT)" code={`example.com.            TXT  "v=spf1 mx ~all"`} />
-						<CodeBlock domainTpl label="DKIM (TXT): paste the key from rspamadm dkim_keygen" code={`dkim._domainkey.example.com.  TXT  "v=DKIM1; k=rsa; p=MIGfMA0GCSq...your-public-key..."`} />
-						<CodeBlock domainTpl label="DMARC (TXT)" code={`_dmarc.example.com.     TXT  "v=DMARC1; p=none; rua=mailto:postmaster@example.com"`} />
-					</div>
-					<div class="sh-dns-block" data-show-for="smtp-provider">
+				<div class="sh-card-list">
+					<article class="sh-card" data-show-for="inbound">
+						<h3>Inbound</h3>
+						<p>Route legacy mail to your bridge server.</p>
+						<DnsRecords records={[
+							{ type: 'MX', name: 'example.com', value: 'mail.example.com', note: 'Priority 10' },
+							{ type: 'A', name: 'mail.example.com', value: '203.0.113.10', note: "Your server's IPv4" },
+							{ type: 'AAAA', name: 'mail.example.com', value: '2001:db8::1', note: 'Only if port 25 is reachable over IPv6' },
+						]} />
+					</article>
+					<article class="sh-card" data-show-for="smtp-selfhost">
+						<h3>Self-hosted SMTP</h3>
+						<p>Lets receiving servers trust the mail you send. Reverse DNS (PTR) is set with your hosting provider, not your DNS provider.</p>
+						<DnsRecords records={[
+							{ type: 'A', name: 'mail.example.com', value: '203.0.113.10', note: "Your server's IPv4" },
+							{ type: 'AAAA', name: 'mail.example.com', value: '2001:db8::1', note: "Your server's IPv6, if it has one" },
+							{ type: 'PTR', name: '203.0.113.10', value: 'mail.example.com', note: 'At your hosting provider. Must match MAIL_HOSTNAME' },
+							{ type: 'TXT', name: 'example.com', value: 'v=spf1 mx ~all', note: 'SPF' },
+							{ type: 'TXT', name: 'dkim._domainkey.example.com', value: 'v=DKIM1; k=rsa; p=MIGfMA0GCSq...your-public-key...', note: 'DKIM: paste the public key printed by rspamadm dkim_keygen' },
+							{ type: 'TXT', name: '_dmarc.example.com', value: 'v=DMARC1; p=none; rua=mailto:postmaster@example.com', note: 'DMARC' },
+						]} />
+					</article>
+					<article class="sh-card" data-show-for="smtp-provider">
 						<h3>Provider SMTP</h3>
 						<p>Your SMTP provider (Mailgun, SendGrid, Amazon SES, etc.) documents the exact SPF, DKIM and tracking-CNAME records to add for your sending domain. Follow their dashboard. No mail server to run.</p>
-					</div>
-					<div class="sh-dns-block" data-show-for="policy">
+					</article>
+					<article class="sh-card" data-show-for="policy">
 						<h3>NIP-05 identity</h3>
 						<p>To serve NIP-05 from your domain, expose nmail-api's <code>/.well-known/nostr.json</code> at <code data-domain-tpl>https://example.com/.well-known/nostr.json</code> (reverse-proxy it). Keep the original <code>Host</code> header (Caddy does by default, nginx needs <code>proxy_set_header Host $host</code>): private aliases are resolved with NIP-98 requests signed for that host.</p>
-					</div>
+					</article>
 				</div>
 			</div>
 		</section>
@@ -235,30 +242,30 @@ mail.example.com.       AAAA    2001:db8::1`} />
 				<div class="header">
 					<h2 class="section-title">Test it</h2>
 				</div>
-				<div class="sh-test-grid">
-					<div class="sh-test-block" data-show-for="inbound">
+				<div class="sh-card-list">
+					<article class="sh-card" data-show-for="inbound">
 						<h3>Inbound</h3>
 						<p>Send a normal email from any mail client to a bridged address, then watch it flow and confirm the Nostr event arrives in your client / relays.</p>
 						<CodeBlock code="docker compose logs -f haraka-webhook webhook" />
-					</div>
-					<div class="sh-test-block" data-show-for="outbound">
+					</article>
+					<article class="sh-card" data-show-for="outbound">
 						<h3>Outbound</h3>
 						<p>From a Nostr Mail client, send a message to a legacy email address and confirm delivery (check spam too). Watch the bridge:</p>
 						<CodeBlock code="docker compose logs -f bridge" />
-					</div>
-					<div class="sh-test-block" data-show-for="smtp-selfhost">
+					</article>
+					<article class="sh-card" data-show-for="smtp-selfhost">
 						<h3>Self-hosted SMTP</h3>
 						<p>Verify SMTP auth + TLS, then score deliverability against a service like mail-tester.com before going live.</p>
 						<CodeBlock domainTpl code={`swaks --to test@example.com --from postmaster@example.com \\
   --server mail.example.com:587 --tls \\
   --auth LOGIN --auth-user postmaster@example.com --auth-password 'change-me-strong-password' \\
   --body "Test from my bridge"`} />
-					</div>
-					<div class="sh-test-block" data-show-for="policy">
+					</article>
+					<article class="sh-card" data-show-for="policy">
 						<h3>Policy &amp; identity</h3>
 						<p>Hit the NIP-05 endpoint and confirm a decision call appears in the nmail-api logs when you send or receive.</p>
 						<CodeBlock code="curl 'http://localhost:3000/.well-known/nostr.json?name=alice'" />
-					</div>
+					</article>
 				</div>
 			</div>
 		</section>
@@ -623,8 +630,7 @@ mail.example.com.       AAAA    2001:db8::1`} />
 	.sh-step-role code,
 	.sh-step-head h3 code,
 	.header code,
-	.sh-dns-block code,
-	.sh-test-block code {
+	.sh-card p code {
 		font-size: 0.85em;
 		color: var(--accent-protocol);
 		background: rgba(139, 92, 246, 0.1);
@@ -700,32 +706,35 @@ mail.example.com.       AAAA    2001:db8::1`} />
 	}
 
 	/* DNS + testing */
-	.sh-dns-grid,
-	.sh-test-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: 24px;
-		align-items: start;
-	}
-	.sh-dns-block,
-	.sh-test-block {
-		background: var(--card-bg);
-		border: 1px solid var(--border);
-		border-radius: 16px;
-		padding: 28px;
+	.sh-card-list {
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
+		gap: 24px;
 	}
-	.sh-dns-block h3,
-	.sh-test-block h3 {
+	.sh-card {
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 20px;
+		padding: 32px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.sh-card h3 {
 		font-size: 1.2rem;
 	}
-	.sh-dns-block p,
-	.sh-test-block p {
-		margin: 0;
+	.sh-card p {
+		margin: 0 0 8px;
+		max-width: 760px;
 		font-size: 0.95rem;
 		line-height: 1.6;
+	}
+	.sh-card p:last-child {
+		margin-bottom: 0;
+	}
+	.sh-card p code {
+		white-space: normal;
+		overflow-wrap: anywhere;
 	}
 
 	/* Help */
@@ -773,7 +782,8 @@ mail.example.com.       AAAA    2001:db8::1`} />
 		.sh-panel {
 			padding: 24px;
 		}
-		.sh-step {
+		.sh-step,
+		.sh-card {
 			padding: 24px;
 		}
 		.sh-step-head {
